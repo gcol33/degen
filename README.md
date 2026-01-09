@@ -6,8 +6,8 @@ non-identifiability in parametric models.
 ## Purpose
 
 Statistical models encode assumptions about data-generating processes. Different
-model formulations—different parameterizations, latent structures, or functional
-forms—can sometimes produce identical distributions over observable data. When
+model formulations (different parameterizations, latent structures, or functional
+forms) can sometimes produce identical distributions over observable data. When
 this occurs, no amount of data can distinguish between them. The models are
 **observationally equivalent**.
 
