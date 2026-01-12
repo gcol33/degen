@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">degen</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -16,6 +16,10 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/introduction.html">Getting Started</a></li>
+  </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/gcol33/degen/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -31,6 +35,55 @@
       <small>Source: <a href="https://github.com/gcol33/degen/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.0" id="degen-090">degen 0.9.0<a class="anchor" aria-label="anchor" href="#degen-090"></a></h2>
+<ul><li>Added comprehensive integration tests</li>
+<li>Added shared test fixtures in helper-fixtures.R</li>
+<li>Verified complete workflows end-to-end</li>
+<li>Tested edge cases and consistency properties</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.0" id="degen-080">degen 0.8.0<a class="anchor" aria-label="anchor" href="#degen-080"></a></h2>
+<ul><li>Added introduction vignette with examples</li>
+<li>Organized pkgdown reference by topic</li>
+<li>Added vignette dependencies (knitr, rmarkdown)</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.0" id="degen-070">degen 0.7.0<a class="anchor" aria-label="anchor" href="#degen-070"></a></h2>
+<ul><li>Added <code><a href="../reference/equivalence_classes.html">equivalence_classes()</a></code> for grouping multiple models by equivalence</li>
+<li>Added <code><a href="../reference/n_classes.html">n_classes()</a></code>, <code><a href="../reference/class_members.html">class_members()</a></code>, <code><a href="../reference/are_equivalent.html">are_equivalent()</a></code> utilities</li>
+<li>Union-find algorithm for efficient class detection</li>
+<li>Added <code><a href="../reference/is_equiv_classes.html">is_equiv_classes()</a></code> type predicate</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.0" id="degen-060">degen 0.6.0<a class="anchor" aria-label="anchor" href="#degen-060"></a></h2>
+<ul><li>Added <code><a href="../reference/identifiability_check.html">identifiability_check()</a></code> for comprehensive identifiability diagnostics</li>
+<li>Added <code><a href="../reference/profile_likelihood.html">profile_likelihood()</a></code> for profile likelihood analysis</li>
+<li>Automatic parameter classification (identified/weakly/non-identifiable)</li>
+<li>Recommendations for addressing identifiability issues</li>
+<li>Added <code><a href="../reference/is_identifiability_result.html">is_identifiability_result()</a></code> type predicate</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.0" id="degen-050">degen 0.5.0<a class="anchor" aria-label="anchor" href="#degen-050"></a></h2>
+<ul><li>Added <code><a href="../reference/fisher_information.html">fisher_information()</a></code> for computing observed Fisher information</li>
+<li>Added <code><a href="../reference/info_eigenvalues.html">info_eigenvalues()</a></code>, <code><a href="../reference/info_condition.html">info_condition()</a></code>, <code><a href="../reference/info_rank.html">info_rank()</a></code> accessors</li>
+<li>Added <code><a href="../reference/null_directions.html">null_directions()</a></code> to find non-identifiable parameter combinations</li>
+<li>Added <code><a href="../reference/is_fisher_info.html">is_fisher_info()</a></code> type predicate</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="degen-040">degen 0.4.0<a class="anchor" aria-label="anchor" href="#degen-040"></a></h2>
+<ul><li>Added <code><a href="../reference/compare_surfaces.html">compare_surfaces()</a></code> for detecting observational equivalence</li>
+<li>Grid-based comparison with multi-start optimization</li>
+<li>Latin hypercube sampling for parameter space exploration</li>
+<li>Added <code><a href="../reference/is_surface_comparison.html">is_surface_comparison()</a></code> type predicate</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.0" id="degen-030">degen 0.3.0<a class="anchor" aria-label="anchor" href="#degen-030"></a></h2>
+<ul><li>Added <code><a href="../reference/equivalence_pair.html">equivalence_pair()</a></code> for pairing models for comparison</li>
+<li>Added <code><a href="../reference/pair_accessors.html">spec_a()</a></code>, <code><a href="../reference/pair_accessors.html">spec_b()</a></code> accessors</li>
+<li>Added <code><a href="../reference/par_dims.html">par_dims()</a></code>, <code><a href="../reference/same_par_count.html">same_par_count()</a></code> utilities</li>
+<li>Added <code><a href="../reference/is_equivalence_pair.html">is_equivalence_pair()</a></code> type predicate</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.0" id="degen-020">degen 0.2.0<a class="anchor" aria-label="anchor" href="#degen-020"></a></h2>
 <ul><li>Added <code><a href="../reference/model_spec.html">model_spec()</a></code> for defining models via log-likelihood functions</li>
