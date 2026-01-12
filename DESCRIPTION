@@ -1,6 +1,6 @@
 Package: degen
 Title: Detect Observational Equivalence and Non-Identifiability in Models
-Version: 0.1.0
+Version: 0.2.0
 Authors@R:
     person("Gilles", "Colling", , "gilles.colling@uclouvain.be", role = c("aut", "cre"))
 Description: Tools for detecting whether statistical model specifications
