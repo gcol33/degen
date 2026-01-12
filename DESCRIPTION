@@ -1,6 +1,6 @@
 Package: degen
 Title: Detect Observational Equivalence and Non-Identifiability in Models
-Version: 0.2.0
+Version: 0.9.0
 Authors@R:
     person("Gilles", "Colling", , "gilles.colling@uclouvain.be", role = c("aut", "cre"))
 Description: Tools for detecting whether statistical model specifications
@@ -12,9 +12,13 @@ BugReports: https://github.com/gcol33/degen/issues
 Depends:
     R (>= 4.1.0)
 Imports:
+    numDeriv,
     stats
 Suggests:
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

@@ -7,3 +7,54 @@ navbar:
   structure:
     left: [intro, reference, articles]
     right: [search, github]
+  components:
+    articles:
+      text: Articles
+      menu:
+        - text: Getting Started
+          href: articles/introduction.html
+
+reference:
+  - title: Model Specification
+    desc: Define models via their log-likelihood functions
+    contents:
+      - model_spec
+      - is_model_spec
+      - par_names
+      - par_bounds
+      - n_par
+      - loglik
+
+  - title: Model Comparison
+    desc: Compare likelihood surfaces between models
+    contents:
+      - equivalence_pair
+      - is_equivalence_pair
+      - spec_a
+      - spec_b
+      - par_dims
+      - same_par_count
+      - compare_surfaces
+      - is_surface_comparison
+
+  - title: Equivalence Classes
+    desc: Group multiple models by equivalence
+    contents:
+      - equivalence_classes
+      - is_equiv_classes
+      - n_classes
+      - class_members
+      - are_equivalent
+
+  - title: Identifiability
+    desc: Diagnose identifiability issues within a model
+    contents:
+      - fisher_information
+      - is_fisher_info
+      - info_eigenvalues
+      - info_condition
+      - info_rank
+      - null_directions
+      - identifiability_check
+      - is_identifiability_result
+      - profile_likelihood
