@@ -206,3 +206,64 @@ test_that("comparison works with single parameter", {
   # Same model should be equivalent (with reasonable tolerance)
   expect_true(result$equivalent)
 })
+
+# Additional coverage tests for surface_comparison methods
+test_that("print shows NOT EQUIVALENT for non-equivalent models", {
+  skip_on_cran()
+
+  exp_spec <- make_exp_spec()
+  gamma2_spec <- make_gamma2_spec()
+  pair <- equivalence_pair(exp_spec, gamma2_spec)
+
+  set.seed(42)
+  y <- rexp(30, rate = 2)
+  result <- compare_surfaces(pair, y, n_points = 10, tol = 1e-4)
+
+  expect_output(print(result), "NOT EQUIVALENT")
+})
+
+test_that("summary shows full output for equivalent models", {
+  skip_on_cran()
+
+  exp_spec <- make_exp_spec()
+  gamma1_spec <- make_gamma1_spec()
+  pair <- equivalence_pair(exp_spec, gamma1_spec)
+
+  set.seed(42)
+  y <- rexp(30, rate = 2)
+  result <- compare_surfaces(pair, y, n_points = 10, tol = 1e-4)
+
+  expect_output(summary(result), "observationally equivalent")
+  expect_output(summary(result), "Discrepancy distribution")
+  expect_output(summary(result), "Min:")
+  expect_output(summary(result), "Median:")
+  expect_output(summary(result), "% < tolerance")
+})
+
+test_that("summary shows NOT equivalent message", {
+  skip_on_cran()
+
+  exp_spec <- make_exp_spec()
+  gamma2_spec <- make_gamma2_spec()
+  pair <- equivalence_pair(exp_spec, gamma2_spec)
+
+  set.seed(42)
+  y <- rexp(30, rate = 2)
+  result <- compare_surfaces(pair, y, n_points = 10, tol = 1e-4)
+
+  expect_output(summary(result), "NOT observationally equivalent")
+})
+
+test_that("format shows NOT EQUIVALENT for non-equivalent models", {
+  skip_on_cran()
+
+  exp_spec <- make_exp_spec()
+  gamma2_spec <- make_gamma2_spec()
+  pair <- equivalence_pair(exp_spec, gamma2_spec)
+
+  set.seed(42)
+  y <- rexp(30, rate = 2)
+  result <- compare_surfaces(pair, y, n_points = 10, tol = 1e-4)
+
+  expect_match(format(result), "NOT EQUIVALENT")
+})
