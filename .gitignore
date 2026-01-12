@@ -1,0 +1,30 @@
+# R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# Package build
+src/*.o
+src/*.so
+src/*.dll
+*.tar.gz
+
+# Documentation
+docs/
+inst/doc
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+covr/
+*.gcov
+*.gcno
+*.gcda

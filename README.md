@@ -1,5 +1,10 @@
 # degen
 
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![R-CMD-check](https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 An R package for detecting observational equivalence, degeneracy, and
 non-identifiability in parametric models.
 

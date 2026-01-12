@@ -1,0 +1,9 @@
+url: https://gcol33.github.io/degen
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, reference, articles]
+    right: [search, github]
