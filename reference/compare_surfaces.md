@@ -110,7 +110,7 @@ print(result)
 #> <surface_comparison>
 #> Conclusion: Models are NOT EQUIVALENT
 #> Points tested: 40
-#> Max discrepancy: 3.24e-06
+#> Max discrepancy: 2.90e-06
 #> Tolerance: 1.00e-06
 #> Method: grid
 ```
