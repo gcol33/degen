@@ -1,6 +1,6 @@
 Package: degen
 Title: Detect Observational Equivalence and Non-Identifiability in Models
-Version: 0.9.0
+Version: 0.10.0
 Authors@R:
     person("Gilles", "Colling", , "gilles.colling@uclouvain.be", role = c("aut", "cre"))
 Description: Tools for detecting whether statistical model specifications
@@ -13,7 +13,10 @@ Depends:
     R (>= 4.1.0)
 Imports:
     numDeriv,
+    Rcpp,
     stats
+LinkingTo:
+    Rcpp
 Suggests:
     knitr,
     rmarkdown,

@@ -1,0 +1,4 @@
+PKG_CPPFLAGS = -I.
+
+SOURCES = RcppExports.cpp rcpp_sampling.cpp degen/sampling.cpp
+OBJECTS = RcppExports.o rcpp_sampling.o degen/sampling.o

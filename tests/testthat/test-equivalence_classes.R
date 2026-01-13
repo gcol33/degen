@@ -94,7 +94,7 @@ test_that("three models with two equivalent grouped correctly", {
   set.seed(42)
   y <- rexp(30, rate = 2)
 
-  result <- equivalence_classes(models, y, n_points = 10, tol = 1e-4)
+  result <- equivalence_classes(models, y, n_points = 30, tol = 1e-4)
 
   # Should have 2 classes: {exp, gamma1} and {gamma2}
   expect_equal(result$n_classes, 2)

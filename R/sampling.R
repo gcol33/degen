@@ -13,26 +13,13 @@ sample_par_space <- function(bounds, n, method = c("lhs", "random")) {
   par_names <- names(bounds)
   n_par <- length(par_names)
 
-  # Get effective bounds (handle infinite)
-  eff_bounds <- lapply(bounds, effective_bounds)
+  # Extract lower and upper bounds
+  lower <- vapply(bounds, `[`, numeric(1), 1)
+  upper <- vapply(bounds, `[`, numeric(1), 2)
 
-  if (method == "lhs") {
-    # Latin hypercube sampling
-    samples <- lhs_sample(n, n_par)
-  } else {
-    # Simple random sampling
-    samples <- matrix(stats::runif(n * n_par), nrow = n, ncol = n_par)
-  }
-
-  # Transform to parameter space
-  result <- matrix(0, nrow = n, ncol = n_par)
+  # Call C++ backend
+  result <- .sample_par_space_cpp(lower, upper, n, lhs = (method == "lhs"))
   colnames(result) <- par_names
-
-  for (j in seq_len(n_par)) {
-    lower <- eff_bounds[[j]][1]
-    upper <- eff_bounds[[j]][2]
-    result[, j] <- lower + samples[, j] * (upper - lower)
-  }
 
   result
 }
@@ -45,20 +32,7 @@ sample_par_space <- function(bounds, n, method = c("lhs", "random")) {
 #' @return Matrix of samples in unit hypercube
 #' @noRd
 lhs_sample <- function(n, k) {
-  result <- matrix(0, nrow = n, ncol = k)
-
-  for (j in seq_len(k)) {
-    # Create stratified samples
-    intervals <- seq(0, 1, length.out = n + 1)
-    lower <- intervals[1:n]
-    upper <- intervals[2:(n + 1)]
-
-    # Sample within each stratum and shuffle
-    samples <- stats::runif(n, lower, upper)
-    result[, j] <- sample(samples)
-  }
-
-  result
+  .lhs_sample_cpp(n, k)
 }
 
 #' Get effective bounds for sampling
@@ -71,26 +45,7 @@ lhs_sample <- function(n, k) {
 #' @return Length-2 vector of finite bounds
 #' @noRd
 effective_bounds <- function(bounds, scale = 10) {
-  lower <- bounds[1]
-  upper <- bounds[2]
-
-  # Handle various cases
-if (is.finite(lower) && is.finite(upper)) {
-    return(c(lower, upper))
-  }
-
-  if (is.finite(lower) && !is.finite(upper)) {
-    # Lower bounded only (e.g., variance > 0)
-    return(c(lower, lower + scale))
-  }
-
-  if (!is.finite(lower) && is.finite(upper)) {
-    # Upper bounded only
-    return(c(upper - scale, upper))
-  }
-
-  # Both infinite
-  c(-scale, scale)
+  .effective_bounds_cpp(bounds[1], bounds[2], scale)
 }
 
 #' Propose reasonable bounds for unbounded parameters

@@ -7,6 +7,7 @@
 
 # Package build
 src/*.o
+src/**/*.o
 src/*.so
 src/*.dll
 *.tar.gz
