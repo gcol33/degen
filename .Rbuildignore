@@ -1,5 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.claude$
+^data-raw$
 ^LICENSE\.md$
 ^README\.Rmd$
 ^\.github$
@@ -10,3 +12,11 @@
 ^codecov\.yml$
 ^plan$
 ^vision\.md$
+^features\.md$
+\.o$
+\.so$
+\.dll$
+^.*\.Rcheck$
+^cleanup$
+^doc$
+^Meta$

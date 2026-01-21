@@ -10,7 +10,9 @@ compare_surfaces(
   n_points = 100,
   method = c("grid", "optimization"),
   tol = 1e-06,
-  verbose = FALSE
+  verbose = FALSE,
+  progress = interactive(),
+  cl = NULL
 )
 }
 \arguments{
@@ -26,6 +28,12 @@ compare_surfaces(
 \item{tol}{Tolerance for likelihood equality (default 1e-6)}
 
 \item{verbose}{Logical; print progress information}
+
+\item{progress}{Logical; show progress bar with ETA (default TRUE in
+interactive sessions). Set to FALSE to suppress progress output.}
+
+\item{cl}{Optional parallel cluster from \code{setup_cluster()}. If provided,
+grid points are evaluated in parallel.}
 }
 \value{
 An S3 object of class \code{surface_comparison} containing:

@@ -1,0 +1,180 @@
+# Minimal script to create datasets - run with R CMD BATCH
+# Creates model_spec objects with proper structure (includes n_par)
+
+# Helper to create model_spec manually
+make_model_spec <- function(loglik_fn, par_names, par_bounds, name) {
+  structure(
+    list(
+      loglik_fn = loglik_fn,
+      par_names = par_names,
+      par_bounds = par_bounds,
+      n_par = length(par_names),
+      name = name
+    ),
+    class = "model_spec"
+  )
+}
+
+# 1. Equivalent models
+equivalent_models <- list(
+  list(
+    model_a = make_model_spec(
+      loglik_fn = function(y, lambda) sum(dexp(y, rate = lambda, log = TRUE)),
+      par_names = "lambda",
+      par_bounds = list(lambda = c(1e-6, 100)),
+      name = "Exponential"
+    ),
+    model_b = make_model_spec(
+      loglik_fn = function(y, rate) sum(dgamma(y, shape = 1, rate = rate, log = TRUE)),
+      par_names = "rate",
+      par_bounds = list(rate = c(1e-6, 100)),
+      name = "Gamma(shape=1)"
+    ),
+    description = "Exponential is Gamma with shape=1"
+  ),
+  list(
+    model_a = make_model_spec(
+      loglik_fn = function(y, mu, sigma) sum(dnorm(y, mu, sigma, log = TRUE)),
+      par_names = c("mu", "sigma"),
+      par_bounds = list(mu = c(-Inf, Inf), sigma = c(1e-6, Inf)),
+      name = "Normal(mu, sigma)"
+    ),
+    model_b = make_model_spec(
+      loglik_fn = function(y, mu, var) sum(dnorm(y, mu, sqrt(var), log = TRUE)),
+      par_names = c("mu", "var"),
+      par_bounds = list(mu = c(-Inf, Inf), var = c(1e-6, Inf)),
+      name = "Normal(mu, var)"
+    ),
+    description = "SD vs variance parameterization"
+  ),
+  list(
+    model_a = make_model_spec(
+      loglik_fn = function(y, scale) sum(dweibull(y, shape = 1, scale = scale, log = TRUE)),
+      par_names = "scale",
+      par_bounds = list(scale = c(1e-6, 100)),
+      name = "Weibull(shape=1)"
+    ),
+    model_b = make_model_spec(
+      loglik_fn = function(y, rate) sum(dexp(y, rate = rate, log = TRUE)),
+      par_names = "rate",
+      par_bounds = list(rate = c(1e-6, 100)),
+      name = "Exponential"
+    ),
+    description = "Weibull(shape=1) equals Exponential (with scale=1/rate)"
+  )
+)
+
+save(equivalent_models, file = "data/equivalent_models.rda", compress = "xz")
+cat("Created equivalent_models.rda\n")
+
+# 2. Non-identifiable example
+set.seed(42)
+nonidentifiable_spec <- make_model_spec(
+  loglik_fn = function(y, a, b) {
+    sum(dnorm(y, mean = a + b, sd = 1, log = TRUE))
+  },
+  par_names = c("a", "b"),
+  par_bounds = list(a = c(-10, 10), b = c(-10, 10)),
+  name = "Non-identifiable sum"
+)
+
+nonidentifiable_example <- list(
+  y = rnorm(100, mean = 5, sd = 1),
+  spec = nonidentifiable_spec,
+  true_sum = 5
+)
+
+save(nonidentifiable_example, file = "data/nonidentifiable_example.rda", compress = "xz")
+cat("Created nonidentifiable_example.rda\n")
+
+# 3. Ecological models
+set.seed(123)
+K_true <- 50
+r_true <- 0.5
+ecological_y <- rpois(50, lambda = K_true * exp(-exp(-r_true * (1:50 / 10))))
+
+exp_spec <- make_model_spec(
+  loglik_fn = function(y, lambda, r) {
+    t <- seq_along(y) / 10
+    mu <- lambda * exp(r * t)
+    sum(dpois(y, lambda = pmax(mu, 0.01), log = TRUE))
+  },
+  par_names = c("lambda", "r"),
+  par_bounds = list(lambda = c(0.1, 200), r = c(-2, 2)),
+  name = "Exponential growth"
+)
+
+logistic_spec <- make_model_spec(
+  loglik_fn = function(y, K, r) {
+    t <- seq_along(y) / 10
+    mu <- K / (1 + exp(-r * t))
+    sum(dpois(y, lambda = pmax(mu, 0.01), log = TRUE))
+  },
+  par_names = c("K", "r"),
+  par_bounds = list(K = c(1, 200), r = c(-2, 2)),
+  name = "Logistic growth"
+)
+
+gompertz_spec <- make_model_spec(
+  loglik_fn = function(y, K, r) {
+    t <- seq_along(y) / 10
+    mu <- K * exp(-exp(-r * t))
+    sum(dpois(y, lambda = pmax(mu, 0.01), log = TRUE))
+  },
+  par_names = c("K", "r"),
+  par_bounds = list(K = c(1, 200), r = c(-2, 2)),
+  name = "Gompertz growth"
+)
+
+ecological_models <- list(
+  y = ecological_y,
+  models = list(
+    exponential = exp_spec,
+    logistic = logistic_spec,
+    gompertz = gompertz_spec
+  ),
+  true_model = "gompertz",
+  true_params = c(K = K_true, r = r_true)
+)
+
+save(ecological_models, file = "data/ecological_models.rda", compress = "xz")
+cat("Created ecological_models.rda\n")
+
+# 4. Mixture model
+set.seed(456)
+n <- 200
+pi_true <- 0.4
+mu1_true <- 0
+mu2_true <- 3
+sigma_true <- 1
+
+z <- rbinom(n, 1, pi_true)
+mixture_y <- ifelse(z == 1, rnorm(n, mu1_true, sigma_true), rnorm(n, mu2_true, sigma_true))
+
+mixture_spec <- make_model_spec(
+  loglik_fn = function(y, mu1, mu2, sigma, pi) {
+    if (pi <= 0 || pi >= 1 || sigma <= 0) return(-Inf)
+    ll <- log(pi * dnorm(y, mu1, sigma) + (1 - pi) * dnorm(y, mu2, sigma))
+    sum(ll)
+  },
+  par_names = c("mu1", "mu2", "sigma", "pi"),
+  par_bounds = list(
+    mu1 = c(-10, 10),
+    mu2 = c(-10, 10),
+    sigma = c(0.01, 10),
+    pi = c(0.01, 0.99)
+  ),
+  name = "Gaussian mixture (2 components)"
+)
+
+mixture_model <- list(
+  y = mixture_y,
+  spec = mixture_spec,
+  true_params = c(mu1 = mu1_true, mu2 = mu2_true, sigma = sigma_true, pi = pi_true),
+  swapped_params = c(mu1 = mu2_true, mu2 = mu1_true, sigma = sigma_true, pi = 1 - pi_true)
+)
+
+save(mixture_model, file = "data/mixture_model.rda", compress = "xz")
+cat("Created mixture_model.rda\n")
+
+cat("\nAll datasets created successfully!\n")

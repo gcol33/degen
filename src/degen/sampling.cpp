@@ -5,6 +5,10 @@
 namespace degen {
 
 std::vector<double> lhs_sample(int n, int k, std::mt19937& rng) {
+  if (n <= 0 || k <= 0) {
+    return std::vector<double>();
+  }
+
   std::vector<double> result(n * k);
   std::uniform_real_distribution<double> unif(0.0, 1.0);
 
@@ -32,6 +36,10 @@ std::vector<double> lhs_sample(int n, int k, std::mt19937& rng) {
 }
 
 std::vector<double> random_sample(int n, int k, std::mt19937& rng) {
+  if (n <= 0 || k <= 0) {
+    return std::vector<double>();
+  }
+
   std::vector<double> result(n * k);
   std::uniform_real_distribution<double> unif(0.0, 1.0);
 

@@ -8,6 +8,10 @@
 #' @param n_points Number of parameter points to sample for each comparison
 #' @param tol Tolerance for equivalence (default 1e-6)
 #' @param verbose Logical; print progress
+#' @param progress Logical; show progress bar with ETA (default TRUE in
+#'   interactive sessions)
+#' @param cl Optional parallel cluster from `setup_cluster()`. If provided,
+#'   pairwise comparisons run in parallel.
 #'
 #' @return An S3 object of class `equiv_classes` containing:
 #' \describe{
@@ -58,7 +62,9 @@ equivalence_classes <- function(specs,
                                 y,
                                 n_points = 50,
                                 tol = 1e-6,
-                                verbose = FALSE) {
+                                verbose = FALSE,
+                                progress = interactive(),
+                                cl = NULL) {
   # Validate inputs
   if (!is.list(specs)) {
     stop("`specs` must be a list of model_spec objects", call. = FALSE)
@@ -96,43 +102,83 @@ equivalence_classes <- function(specs,
   diag(discrep_matrix) <- 0
 
   n_pairs <- n_models * (n_models - 1) / 2
-  pair_count <- 0
 
+  # Build list of all pairs to compare
+ pair_indices <- vector("list", n_pairs)
+  k <- 0
   for (i in seq_len(n_models - 1)) {
     for (j in (i + 1):n_models) {
-      pair_count <- pair_count + 1
+      k <- k + 1
+      pair_indices[[k]] <- c(i, j)
+    }
+  }
 
+  # Function to compare a single pair
+  compare_one_pair <- function(idx, show_progress = FALSE) {
+    i <- idx[1]
+    j <- idx[2]
+    pair <- equivalence_pair(specs[[i]], specs[[j]])
+    result <- compare_surfaces(pair, y, n_points = n_points, tol = tol,
+                               progress = show_progress)
+    list(i = i, j = j, equivalent = result$equivalent,
+         max_discrepancy = result$max_discrepancy)
+  }
+
+  # Run comparisons (parallel if cluster provided)
+  if (!is.null(cl)) {
+    # Export required objects to workers
+    parallel::clusterExport(cl, c("specs", "y", "n_points", "tol"),
+                            envir = environment())
+    results <- parallel::parLapply(cl, pair_indices, compare_one_pair)
+  } else {
+    # Sequential with progress bar
+    results <- vector("list", n_pairs)
+    prog <- create_timed_progress(n_pairs, show = progress, label = "Comparing")
+
+    for (k in seq_len(n_pairs)) {
       if (verbose) {
+        i <- pair_indices[[k]][1]
+        j <- pair_indices[[k]][2]
         cat(sprintf("Comparing %s vs %s (%d/%d)...\n",
-                    model_names[i], model_names[j], pair_count, n_pairs))
+                    model_names[i], model_names[j], k, n_pairs))
       }
-
-      pair <- equivalence_pair(specs[[i]], specs[[j]])
-      result <- compare_surfaces(pair, y, n_points = n_points, tol = tol)
-
-      equiv_matrix[i, j] <- result$equivalent
-      equiv_matrix[j, i] <- result$equivalent
-      discrep_matrix[i, j] <- result$max_discrepancy
-      discrep_matrix[j, i] <- result$max_discrepancy
+      # Disable nested progress for individual comparisons
+      results[[k]] <- compare_one_pair(pair_indices[[k]], show_progress = FALSE)
+      prog$update(k)
     }
+    prog$close()
   }
 
-  # Use union-find to build equivalence classes
+  # Fill matrices from results
+  for (res in results) {
+    equiv_matrix[res$i, res$j] <- res$equivalent
+    equiv_matrix[res$j, res$i] <- res$equivalent
+    discrep_matrix[res$i, res$j] <- res$max_discrepancy
+    discrep_matrix[res$j, res$i] <- res$max_discrepancy
+  }
+
+  # Use union-find to build equivalence classes (with path compression)
   parent <- seq_len(n_models)
-  names(parent) <- model_names
 
-  find_root <- function(x) {
-    while (parent[x] != which(model_names == x)) {
-      x <- model_names[parent[x]]
+  find_root <- function(i) {
+    root <- i
+    while (parent[root] != root) {
+      root <- parent[root]
     }
-    x
+    # Path compression: point all nodes on path directly to root
+    while (parent[i] != root) {
+      next_i <- parent[i]
+      parent[i] <<- root
+      i <- next_i
+    }
+    root
   }
 
-  union_sets <- function(x, y) {
-    root_x <- find_root(x)
-    root_y <- find_root(y)
-    if (root_x != root_y) {
-      parent[root_y] <<- which(model_names == root_x)
+  union_sets <- function(i, j) {
+    root_i <- find_root(i)
+    root_j <- find_root(j)
+    if (root_i != root_j) {
+      parent[root_j] <<- root_i
     }
   }
 
@@ -140,13 +186,13 @@ equivalence_classes <- function(specs,
   for (i in seq_len(n_models - 1)) {
     for (j in (i + 1):n_models) {
       if (isTRUE(equiv_matrix[i, j])) {
-        union_sets(model_names[i], model_names[j])
+        union_sets(i, j)
       }
     }
   }
 
   # Build classes from union-find
-  roots <- vapply(model_names, find_root, character(1))
+  roots <- vapply(seq_len(n_models), find_root, integer(1))
   unique_roots <- unique(roots)
   n_classes <- length(unique_roots)
 

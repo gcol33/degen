@@ -29,3 +29,5 @@ covr/
 *.gcov
 *.gcno
 *.gcda
+/doc/
+/Meta/

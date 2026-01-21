@@ -1,0 +1,263 @@
+---
+title: "Comparing Models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comparing Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(degen)
+```
+
+## Overview
+
+This vignette covers workflows for comparing statistical models to determine whether they are observationally equivalent. Two models are equivalent if they can produce exactly the same likelihood for any dataset.
+
+## Comparing two models
+
+### Setting up the comparison
+
+First, define the two models you want to compare:
+
+```{r setup-comparison}
+# Exponential distribution
+exp_spec <- model_spec(
+  loglik_fn = function(y, lambda) sum(dexp(y, rate = lambda, log = TRUE)),
+  par_names = "lambda",
+  par_bounds = list(lambda = c(1e-6, 100)),
+  name = "Exponential"
+)
+
+# Gamma with shape = 1 (mathematically equivalent to exponential)
+gamma1_spec <- model_spec(
+  loglik_fn = function(y, rate) {
+    sum(dgamma(y, shape = 1, rate = rate, log = TRUE))
+  },
+  par_names = "rate",
+  par_bounds = list(rate = c(1e-6, 100)),
+  name = "Gamma(shape=1)"
+)
+
+# Create the pair
+pair <- equivalence_pair(exp_spec, gamma1_spec)
+print(pair)
+```
+
+### Running the comparison
+
+Use `compare_surfaces()` to test equivalence:
+
+```{r run-comparison}
+# Generate test data
+set.seed(42)
+y <- rexp(100, rate = 2)
+
+# Compare (disable progress bar for vignette)
+result <- compare_surfaces(pair, y, n_points = 30, progress = FALSE)
+print(result)
+```
+
+### Interpreting results
+
+The key outputs are:
+
+- **equivalent**: Overall conclusion (TRUE/FALSE)
+- **max_discrepancy**: Largest difference in log-likelihood found
+- **ab_discrepancy**: Max discrepancy when mapping A → B
+- **ba_discrepancy**: Max discrepancy when mapping B → A
+
+## Comparison methods
+
+### Grid method (default)
+
+The grid method samples parameter space uniformly and checks if each point can be matched:
+
+```{r grid-method}
+result_grid <- compare_surfaces(pair, y, n_points = 30,
+                                method = "grid", progress = FALSE)
+result_grid$max_discrepancy
+```
+
+**When to use**: General-purpose method, good for most cases.
+
+### Optimization method
+
+The optimization method actively searches for counterexamples:
+
+```{r optim-method}
+result_optim <- compare_surfaces(pair, y, n_points = 30,
+                                 method = "optimization", progress = FALSE)
+result_optim$max_discrepancy
+```
+
+**When to use**: When you expect non-equivalence and want to find a clear counterexample quickly.
+
+## Setting tolerance
+
+The `tol` parameter determines how close likelihoods must be:
+
+```{r tolerance}
+# Strict tolerance
+strict <- compare_surfaces(pair, y, n_points = 30, tol = 1e-8, progress = FALSE)
+
+# Relaxed tolerance
+relaxed <- compare_surfaces(pair, y, n_points = 30, tol = 1e-4, progress = FALSE)
+
+cat("Strict (tol=1e-8):", strict$equivalent, "max discrepancy:", strict$max_discrepancy, "\n")
+cat("Relaxed (tol=1e-4):", relaxed$equivalent, "max discrepancy:", relaxed$max_discrepancy, "\n")
+```
+
+**Guidelines**:
+
+- `1e-6` (default): Standard numerical precision
+- `1e-8`: Very strict, may flag numerical artifacts
+- `1e-4`: More permissive, allows for minor numerical differences
+
+## Comparing non-equivalent models
+
+When models differ, the comparison reveals the discrepancy:
+
+```{r non-equivalent}
+# Gamma with shape = 2 (NOT equivalent to exponential)
+gamma2_spec <- model_spec(
+  loglik_fn = function(y, rate) {
+    sum(dgamma(y, shape = 2, rate = rate, log = TRUE))
+  },
+  par_names = "rate",
+  par_bounds = list(rate = c(1e-6, 100)),
+  name = "Gamma(shape=2)"
+)
+
+pair_diff <- equivalence_pair(exp_spec, gamma2_spec)
+result_diff <- compare_surfaces(pair_diff, y, n_points = 30, progress = FALSE)
+print(result_diff)
+```
+
+## Comparing multiple models
+
+### Using equivalence_classes()
+
+When you have several models, `equivalence_classes()` performs all pairwise comparisons and groups equivalent models:
+
+```{r equiv-classes}
+# Define multiple models
+models <- list(
+  exp = exp_spec,
+  gamma1 = gamma1_spec,
+  gamma2 = gamma2_spec
+)
+
+# Find equivalence classes
+classes <- equivalence_classes(models, y, n_points = 20, progress = FALSE)
+print(classes)
+```
+
+### Accessing results
+
+```{r access-results}
+# Number of distinct classes
+n_classes(classes)
+
+# Members of each class
+class_members(classes, 1)
+class_members(classes, 2)
+
+# Check if two specific models are equivalent
+are_equivalent(classes, "exp", "gamma1")
+are_equivalent(classes, "exp", "gamma2")
+```
+
+### Viewing the discrepancy matrix
+
+```{r discrepancy-matrix}
+# Pairwise discrepancies
+round(classes$discrepancies, 6)
+```
+
+## Batch comparisons
+
+### Comparing all pairs systematically
+
+```{r batch-compare, eval=FALSE}
+# Compare all pairs with detailed output
+all_results <- compare_all_pairs(models, y, n_points = 20, progress = FALSE)
+```
+
+### Finding equivalent models
+
+```{r find-equivalent, eval=FALSE}
+# Find all models equivalent to the exponential
+equiv_to_exp <- find_equivalent_to(models, reference = "exp", y, n_points = 20)
+```
+
+## Visualizing comparisons
+
+### Equivalence matrix plot
+
+```{r plot-equiv}
+# Visual matrix of equivalence relationships
+plot(classes)
+```
+
+### Likelihood surface visualization
+
+For two-parameter models, visualize the likelihood surface:
+
+```{r likelihood-surface}
+# A two-parameter model
+norm_spec <- model_spec_normal()
+y_norm <- rnorm(50, mean = 5, sd = 2)
+
+# Plot the likelihood surface
+plot_likelihood_surface(norm_spec, y_norm, par = c(mu = 5, sigma = 2))
+```
+
+## Debugging comparisons
+
+When results are unexpected, use `debug_comparison()` to trace the algorithm:
+
+```{r debug}
+# Detailed trace of a single comparison
+trace <- debug_comparison(pair, y, par = c(lambda = 2), direction = "A_to_B")
+```
+
+## Best practices
+
+1. **Start with small n_points**: Begin with `n_points = 20-30` to get quick results, then increase for final analysis.
+
+2. **Use appropriate tolerances**: `1e-6` works for most cases; adjust based on model complexity.
+
+3. **Check both directions**: Equivalence requires A → B and B → A to match.
+
+4. **Examine the evidence**: When models appear non-equivalent, check the `evidence` component to see where discrepancies occur.
+
+5. **Consider the data**: Different datasets may reveal different behaviors. Test with data from both models if possible.
+
+## Interpreting negative results
+
+A conclusion of equivalence means:
+
+- No counterexample was found within the tested parameter region
+- This is numerical evidence, not mathematical proof
+- The conclusion depends on `n_points` and `tol`
+
+To increase confidence:
+
+```{r increase-confidence, eval=FALSE}
+# More test points
+result_thorough <- compare_surfaces(pair, y, n_points = 200, tol = 1e-8)
+
+# Multiple random seeds
+set.seed(123); r1 <- compare_surfaces(pair, y, n_points = 50)
+set.seed(456); r2 <- compare_surfaces(pair, y, n_points = 50)
+set.seed(789); r3 <- compare_surfaces(pair, y, n_points = 50)
+```

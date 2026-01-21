@@ -11,6 +11,8 @@
 #'   "profile" adds profile likelihood analysis
 #' @param threshold Eigenvalue threshold for non-identifiability (default 0.01)
 #' @param verbose Logical; print progress information
+#' @param cl Optional parallel cluster from `setup_cluster()`. If provided,
+#'   profile likelihood computations run in parallel.
 #'
 #' @return An S3 object of class `identifiability_result` containing:
 #' \describe{
@@ -55,7 +57,8 @@ identifiability_check <- function(spec,
                                   par = NULL,
                                   level = c("local", "profile"),
                                   threshold = 0.01,
-                                  verbose = FALSE) {
+                                  verbose = FALSE,
+                                  cl = NULL) {
   # Validate inputs
   if (!is_model_spec(spec)) {
     stop("`spec` must be a model_spec object", call. = FALSE)
@@ -91,7 +94,7 @@ identifiability_check <- function(spec,
   profile_results <- NULL
   if (level == "profile") {
     if (verbose) cat("Computing profile likelihoods...\n")
-    profile_results <- profile_all(spec, y, par, verbose = verbose)
+    profile_results <- profile_all(spec, y, par, verbose = verbose, cl = cl)
   }
 
   structure(
@@ -150,23 +153,29 @@ classify_identifiability <- function(info, threshold) {
   # Get eigenvalue contributions for each parameter
   eig_vals <- info$eigenvalues
   eig_vecs <- info$eigenvectors
+  n_par <- info$n_par
 
-  status <- character(info$n_par)
+  status <- character(n_par)
   names(status) <- info$par_names
 
+  # Precompute invariants outside loop
+  eig_vals_pos <- pmax(eig_vals, 0)
+  max_abs_eig <- max(abs(eig_vals))
+  null_threshold <- threshold * max_abs_eig
+  null_idx <- which(abs(eig_vals) < null_threshold)
+  has_null <- length(null_idx) > 0
+  is_rank_deficient <- info$rank < n_par
+  is_poorly_conditioned <- info$condition > 1000
+  min_eig_idx <- which.min(abs(eig_vals))
+
   # For each parameter, check if it contributes to near-zero eigenvalues
-  for (i in seq_along(status)) {
+  for (i in seq_len(n_par)) {
     # Get the parameter's loading on each eigenvector
     loadings <- abs(eig_vecs[i, ])
 
-    # Weight by eigenvalue magnitude
-    weighted_contribution <- sum(loadings^2 * pmax(eig_vals, 0))
-
-    # Also check if parameter is dominant in any null direction
-    null_idx <- which(abs(eig_vals) < threshold * max(abs(eig_vals)))
-
-    if (length(null_idx) > 0) {
-      null_loading <- max(abs(eig_vecs[i, null_idx]))
+    # Check if parameter is dominant in any null direction
+    if (has_null) {
+      null_loading <- max(loadings[null_idx])
       if (null_loading > 0.3) {
         status[i] <- "non_identifiable"
         next
@@ -174,13 +183,12 @@ classify_identifiability <- function(info, threshold) {
     }
 
     # Classify based on condition number contribution
-    if (info$rank < info$n_par) {
+    if (is_rank_deficient) {
       # Model is rank deficient
       status[i] <- "non_identifiable"
-    } else if (info$condition > 1000) {
+    } else if (is_poorly_conditioned) {
       # Check if this parameter is poorly conditioned
-      min_eig_loading <- abs(eig_vecs[i, which.min(abs(eig_vals))])
-      if (min_eig_loading > 0.3) {
+      if (loadings[min_eig_idx] > 0.3) {
         status[i] <- "weakly_identified"
       } else {
         status[i] <- "identified"
@@ -206,29 +214,26 @@ find_identified_functions <- function(info, threshold) {
     return(character(0))
   }
 
-  functions <- character(length(good_idx))
+  vapply(good_idx, function(idx) {
+    format_eigenvector(eig_vecs[, idx], info$par_names)
+  }, character(1))
+}
 
-  for (k in seq_along(good_idx)) {
-    idx <- good_idx[k]
-    vec <- eig_vecs[, idx]
-
-    # Create human-readable representation
-    terms <- character(0)
-    for (j in seq_along(vec)) {
-      if (abs(vec[j]) > 0.1) {
-        coef <- round(vec[j], 2)
-        if (coef > 0 && length(terms) > 0) {
-          terms <- c(terms, sprintf("+ %.2f*%s", coef, info$par_names[j]))
-        } else {
-          terms <- c(terms, sprintf("%.2f*%s", coef, info$par_names[j]))
-        }
+#' Format eigenvector as human-readable linear combination
+#' @noRd
+format_eigenvector <- function(vec, par_names, coef_threshold = 0.1) {
+  terms <- character(0)
+  for (j in seq_along(vec)) {
+    if (abs(vec[j]) > coef_threshold) {
+      coef <- round(vec[j], 2)
+      if (coef > 0 && length(terms) > 0) {
+        terms <- c(terms, sprintf("+ %.2f*%s", coef, par_names[j]))
+      } else {
+        terms <- c(terms, sprintf("%.2f*%s", coef, par_names[j]))
       }
     }
-
-    functions[k] <- paste(terms, collapse = " ")
   }
-
-  functions
+  paste(terms, collapse = " ")
 }
 
 #' Describe null directions
@@ -240,27 +245,9 @@ describe_null_directions <- function(info, threshold) {
     return(character(0))
   }
 
-  descriptions <- character(ncol(null_vecs))
-
-  for (k in seq_len(ncol(null_vecs))) {
-    vec <- null_vecs[, k]
-
-    terms <- character(0)
-    for (j in seq_along(vec)) {
-      if (abs(vec[j]) > 0.1) {
-        coef <- round(vec[j], 2)
-        if (coef > 0 && length(terms) > 0) {
-          terms <- c(terms, sprintf("+ %.2f*%s", coef, info$par_names[j]))
-        } else {
-          terms <- c(terms, sprintf("%.2f*%s", coef, info$par_names[j]))
-        }
-      }
-    }
-
-    descriptions[k] <- paste(terms, collapse = " ")
-  }
-
-  descriptions
+  vapply(seq_len(ncol(null_vecs)), function(k) {
+    format_eigenvector(null_vecs[, k], info$par_names)
+  }, character(1))
 }
 
 #' Generate recommendations
@@ -305,15 +292,29 @@ generate_recommendations <- function(info, status, threshold) {
 
 #' Compute profile likelihood for all parameters
 #' @noRd
-profile_all <- function(spec, y, par, n_points = 20, verbose = FALSE) {
-  results <- list()
+profile_all <- function(spec, y, par, n_points = 20, verbose = FALSE, cl = NULL) {
+  par_names <- spec$par_names
 
-  for (p in spec$par_names) {
-    if (verbose) cat(sprintf("  Profiling %s...\n", p))
-    results[[p]] <- profile_likelihood(spec, y, par, p, n_points)
+  # Function to profile one parameter
+  profile_one <- function(p) {
+    profile_likelihood(spec, y, par, p, n_points)
   }
 
-  results
+  # Run profiling (parallel if cluster provided)
+  if (!is.null(cl)) {
+    parallel::clusterExport(cl, c("spec", "y", "par", "n_points"),
+                            envir = environment())
+    result_list <- parallel::parLapply(cl, par_names, profile_one)
+  } else {
+    result_list <- vector("list", length(par_names))
+    for (i in seq_along(par_names)) {
+      if (verbose) cat(sprintf("  Profiling %s...\n", par_names[i]))
+      result_list[[i]] <- profile_one(par_names[i])
+    }
+  }
+
+  names(result_list) <- par_names
+  result_list
 }
 
 #' Compute profile likelihood for one parameter
@@ -393,6 +394,190 @@ profile_likelihood <- function(spec, y, par, which_par, n_points = 20) {
     loglik = profile_ll,
     stringsAsFactors = FALSE
   )
+}
+
+#' Compute profile likelihood confidence intervals
+#'
+#' Extract confidence intervals from profile likelihood curves using the
+#' likelihood ratio test criterion.
+#'
+#' @param spec A `model_spec` object
+#' @param y Numeric vector of observed data
+#' @param par Named numeric vector of parameter values (typically MLE)
+#' @param level Confidence level (default 0.95)
+#' @param n_points Number of points for profile likelihood (default 50)
+#' @param which_par Optional character vector of parameter names to compute CIs for.
+#'   If NULL (default), computes CIs for all parameters.
+#'
+#' @return A data frame with columns:
+#' \describe{
+#'   \item{parameter}{Parameter name}
+#'   \item{estimate}{Point estimate (from `par`)}
+#'   \item{lower}{Lower confidence bound}
+#'   \item{upper}{Upper confidence bound}
+#'   \item{level}{Confidence level}
+#' }
+#'
+#' @details
+#' The confidence interval is based on the likelihood ratio test. For a given
+#' confidence level, the interval includes all parameter values where the
+#' profile log-likelihood is within `qchisq(level, df=1)/2` of the maximum.
+#'
+#' @export
+#'
+#' @examples
+#' spec <- model_spec(
+#'   loglik_fn = function(y, mu, sigma) sum(dnorm(y, mu, sigma, log = TRUE)),
+#'   par_names = c("mu", "sigma"),
+#'   par_bounds = list(sigma = c(1e-6, Inf))
+#' )
+#' set.seed(123)
+#' y <- rnorm(100, mean = 5, sd = 2)
+#' ci <- profile_ci(spec, y, par = c(mu = 5, sigma = 2))
+#' print(ci)
+profile_ci <- function(spec, y, par, level = 0.95, n_points = 50, which_par = NULL) {
+  if (!is_model_spec(spec)) {
+    stop("`spec` must be a model_spec object", call. = FALSE)
+  }
+
+  if (is.null(which_par)) {
+    which_par <- spec$par_names
+  }
+
+  # Chi-squared threshold for likelihood ratio
+  threshold <- stats::qchisq(level, df = 1) / 2
+
+  results <- vector("list", length(which_par))
+
+  for (i in seq_along(which_par)) {
+    p <- which_par[i]
+
+    # Compute profile likelihood
+    profile <- profile_likelihood(spec, y, par, p, n_points)
+
+    # Normalize to max = 0
+    ll <- profile$loglik
+    ll_norm <- ll - max(ll, na.rm = TRUE)
+
+    # Find where profile crosses threshold
+    vals <- profile$value
+    above_threshold <- which(ll_norm >= -threshold)
+
+    if (length(above_threshold) == 0) {
+      # Profile is too flat or didn't capture the CI
+      lower <- NA_real_
+      upper <- NA_real_
+    } else {
+      # Approximate CI bounds by interpolation
+      lower <- find_ci_bound(vals, ll_norm, -threshold, "lower")
+      upper <- find_ci_bound(vals, ll_norm, -threshold, "upper")
+    }
+
+    results[[i]] <- data.frame(
+      parameter = p,
+      estimate = par[p],
+      lower = lower,
+      upper = upper,
+      level = level,
+      stringsAsFactors = FALSE
+    )
+  }
+
+  do.call(rbind, results)
+}
+
+#' Find CI bound by interpolation
+#' @noRd
+find_ci_bound <- function(vals, ll_norm, threshold, side = c("lower", "upper")) {
+  side <- match.arg(side)
+
+  # Find where profile crosses threshold
+  above <- ll_norm >= threshold
+  n <- length(vals)
+
+  if (side == "lower") {
+    # Find first crossing from below
+    for (i in seq_len(n - 1)) {
+      if (!above[i] && above[i + 1]) {
+        # Linear interpolation
+        x1 <- vals[i]
+        x2 <- vals[i + 1]
+        y1 <- ll_norm[i]
+        y2 <- ll_norm[i + 1]
+        return(x1 + (threshold - y1) * (x2 - x1) / (y2 - y1))
+      }
+    }
+    # If no crossing found, return the minimum value if above threshold
+    if (above[1]) return(vals[1])
+    return(NA_real_)
+  } else {
+    # Find last crossing from above
+    for (i in seq(n - 1, 1)) {
+      if (above[i] && !above[i + 1]) {
+        # Linear interpolation
+        x1 <- vals[i]
+        x2 <- vals[i + 1]
+        y1 <- ll_norm[i]
+        y2 <- ll_norm[i + 1]
+        return(x1 + (threshold - y1) * (x2 - x1) / (y2 - y1))
+      }
+    }
+    # If no crossing found, return the maximum value if above threshold
+    if (above[n]) return(vals[n])
+    return(NA_real_)
+  }
+}
+
+#' S3 method for confint
+#'
+#' Compute confidence intervals for model parameters using profile likelihood.
+#'
+#' @param object A `model_spec` object
+#' @param parm Parameter names (character vector). If missing, all parameters.
+#' @param level Confidence level (default 0.95)
+#' @param y Numeric vector of observed data
+#' @param par Named numeric vector of parameter values (typically MLE)
+#' @param ... Additional arguments (ignored)
+#'
+#' @return A matrix with columns for lower and upper bounds
+#' @export
+#'
+#' @examples
+#' spec <- model_spec(
+#'   loglik_fn = function(y, mu, sigma) sum(dnorm(y, mu, sigma, log = TRUE)),
+#'   par_names = c("mu", "sigma"),
+#'   par_bounds = list(sigma = c(1e-6, Inf))
+#' )
+#' set.seed(123)
+#' y <- rnorm(100, mean = 5, sd = 2)
+#' confint(spec, y = y, par = c(mu = 5, sigma = 2))
+confint.model_spec <- function(object, parm, level = 0.95, y, par, ...) {
+  if (missing(y)) {
+    stop("`y` (data) must be provided", call. = FALSE)
+  }
+  if (missing(par)) {
+    stop("`par` (parameter values) must be provided", call. = FALSE)
+  }
+
+  if (missing(parm)) {
+    parm <- object$par_names
+  }
+
+  ci <- profile_ci(object, y, par, level = level, which_par = parm)
+
+  # Format as matrix like stats::confint
+  result <- cbind(ci$lower, ci$upper)
+  rownames(result) <- ci$parameter
+  pct <- format_pct((1 - level) / 2)
+  colnames(result) <- c(pct[1], pct[2])
+
+  result
+}
+
+#' Format percentages for CI column names
+#' @noRd
+format_pct <- function(p) {
+  paste0(format(100 * c(p, 1 - p), trim = TRUE, digits = 3), " %")
 }
 
 #' @export

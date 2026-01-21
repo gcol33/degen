@@ -9,7 +9,8 @@ fisher_information(
   y,
   par,
   type = c("observed", "expected"),
-  method = c("hessian")
+  method = c("hessian"),
+  cl = NULL
 )
 }
 \arguments{
@@ -20,11 +21,14 @@ fisher_information(
 \item{par}{Named numeric vector of parameter values at which to evaluate}
 
 \item{type}{Type of information: "observed" (default) uses the negative
-Hessian at the data; "expected" would use theoretical expectation
-(not yet implemented)}
+Hessian at the data; "expected" uses the outer product of gradients (OPG)
+estimator computed from per-observation score contributions}
 
 \item{method}{Computation method: "hessian" (default) uses numerical
 differentiation}
+
+\item{cl}{Optional parallel cluster from \code{setup_cluster()}. Only used for
+\code{type = "expected"} to parallelize per-observation score computation.}
 }
 \value{
 An S3 object of class \code{fisher_info} containing:
@@ -36,11 +40,13 @@ An S3 object of class \code{fisher_info} containing:
 \item{rank}{Numerical rank}
 \item{par}{Parameter values used}
 \item{par_names}{Parameter names}
+\item{type}{Type of information computed}
 }
 }
 \description{
-Compute the observed Fisher information matrix (negative Hessian of
-log-likelihood) for a model specification at given parameter values.
+Compute the Fisher information matrix for a model specification at given
+parameter values. Supports both observed information (negative Hessian) and
+expected information (outer product of gradients estimator).
 }
 \details{
 The Fisher information matrix characterizes the curvature of the
@@ -49,6 +55,19 @@ log-likelihood surface. Key properties:
 \item Positive definite: all parameters locally identifiable
 \item Singular (rank deficient): some parameters not identifiable
 \item Near-singular (high condition number): some parameters weakly identified
+}
+
+Two types of information are available:
+\itemize{
+\item \strong{Observed information} (\code{type = "observed"}): The negative Hessian of
+the log-likelihood. This is the default and most common choice.
+\item \strong{Expected information} (\code{type = "expected"}): Estimated using the outer
+product of gradients (OPG), where scores are summed over observations.
+The score is the gradient of the log-likelihood for each observation.
+Under regularity conditions,
+this converges to the same limit as observed information but may differ
+in finite samples. Requires the log-likelihood to be additive over
+observations.
 }
 }
 \examples{
@@ -62,6 +81,13 @@ spec <- model_spec(
 
 set.seed(123)
 y <- rnorm(100, mean = 5, sd = 2)
-info <- fisher_information(spec, y, par = c(mu = 5, sigma = 2))
-print(info)
+
+# Observed information (negative Hessian)
+info_obs <- fisher_information(spec, y, par = c(mu = 5, sigma = 2))
+print(info_obs)
+
+# Expected information (OPG estimator)
+info_exp <- fisher_information(spec, y, par = c(mu = 5, sigma = 2),
+                               type = "expected")
+print(info_exp)
 }

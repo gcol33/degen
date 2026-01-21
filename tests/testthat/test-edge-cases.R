@@ -524,7 +524,7 @@ test_that("check_par_in_bounds catches out-of-bounds", {
 # fisher_information.R edge cases
 # ============================================================================
 
-test_that("fisher_information rejects expected type", {
+test_that("fisher_information computes expected information (OPG)", {
   spec <- model_spec(
     loglik_fn = function(y, mu) sum(dnorm(y, mu, 1, log = TRUE)),
     par_names = "mu"
@@ -533,10 +533,14 @@ test_that("fisher_information rejects expected type", {
   set.seed(123)
   y <- rnorm(20)
 
-  expect_error(
-    fisher_information(spec, y, par = c(mu = 0), type = "expected"),
-    "not yet implemented"
-  )
+  info_exp <- fisher_information(spec, y, par = c(mu = 0), type = "expected")
+
+  expect_s3_class(info_exp, "fisher_info")
+  expect_equal(info_exp$type, "expected")
+  expect_equal(info_exp$n_par, 1)
+  expect_equal(info_exp$n_obs, 20)
+  # OPG estimate should be positive for identifiable model
+  expect_gt(info_exp$matrix[1, 1], 0)
 })
 
 test_that("fisher_information requires named par vector", {

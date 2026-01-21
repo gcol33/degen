@@ -5,6 +5,10 @@
 // LHS sampling using R's RNG (respects set.seed)
 // [[Rcpp::export(.lhs_sample_cpp)]]
 Rcpp::NumericMatrix lhs_sample_cpp(int n, int k) {
+  if (n <= 0 || k <= 0) {
+    return Rcpp::NumericMatrix(n < 0 ? 0 : n, k < 0 ? 0 : k);
+  }
+
   Rcpp::NumericMatrix result(n, k);
 
   for (int j = 0; j < k; ++j) {
@@ -36,6 +40,10 @@ Rcpp::NumericMatrix lhs_sample_cpp(int n, int k) {
 // Random sampling using R's RNG
 // [[Rcpp::export(.random_sample_cpp)]]
 Rcpp::NumericMatrix random_sample_cpp(int n, int k) {
+  if (n <= 0 || k <= 0) {
+    return Rcpp::NumericMatrix(n < 0 ? 0 : n, k < 0 ? 0 : k);
+  }
+
   Rcpp::NumericMatrix result(n, k);
   for (int i = 0; i < n; ++i) {
     for (int j = 0; j < k; ++j) {

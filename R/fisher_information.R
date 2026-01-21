@@ -1,16 +1,19 @@
 #' Compute Fisher information matrix
 #'
-#' Compute the observed Fisher information matrix (negative Hessian of
-#' log-likelihood) for a model specification at given parameter values.
+#' Compute the Fisher information matrix for a model specification at given
+#' parameter values. Supports both observed information (negative Hessian) and
+#' expected information (outer product of gradients estimator).
 #'
 #' @param spec A `model_spec` object
 #' @param y Numeric vector of observed data
 #' @param par Named numeric vector of parameter values at which to evaluate
 #' @param type Type of information: "observed" (default) uses the negative
-#'   Hessian at the data; "expected" would use theoretical expectation
-#'   (not yet implemented)
+#'   Hessian at the data; "expected" uses the outer product of gradients (OPG)
+#'   estimator computed from per-observation score contributions
 #' @param method Computation method: "hessian" (default) uses numerical
 #'   differentiation
+#' @param cl Optional parallel cluster from `setup_cluster()`. Only used for
+#'   `type = "expected"` to parallelize per-observation score computation.
 #'
 #' @return An S3 object of class `fisher_info` containing:
 #' \describe{
@@ -21,6 +24,7 @@
 #'   \item{rank}{Numerical rank}
 #'   \item{par}{Parameter values used}
 #'   \item{par_names}{Parameter names}
+#'   \item{type}{Type of information computed}
 #' }
 #'
 #' @details
@@ -30,6 +34,19 @@
 #' - Positive definite: all parameters locally identifiable
 #' - Singular (rank deficient): some parameters not identifiable
 #' - Near-singular (high condition number): some parameters weakly identified
+#'
+#' Two types of information are available:
+#'
+#' - **Observed information** (`type = "observed"`): The negative Hessian of
+#'   the log-likelihood. This is the default and most common choice.
+#'
+#' - **Expected information** (`type = "expected"`): Estimated using the outer
+#'   product of gradients (OPG), where scores are summed over observations.
+#'   The score is the gradient of the log-likelihood for each observation.
+#'   Under regularity conditions,
+#'   this converges to the same limit as observed information but may differ
+#'   in finite samples. Requires the log-likelihood to be additive over
+#'   observations.
 #'
 #' @export
 #'
@@ -44,13 +61,21 @@
 #'
 #' set.seed(123)
 #' y <- rnorm(100, mean = 5, sd = 2)
-#' info <- fisher_information(spec, y, par = c(mu = 5, sigma = 2))
-#' print(info)
+#'
+#' # Observed information (negative Hessian)
+#' info_obs <- fisher_information(spec, y, par = c(mu = 5, sigma = 2))
+#' print(info_obs)
+#'
+#' # Expected information (OPG estimator)
+#' info_exp <- fisher_information(spec, y, par = c(mu = 5, sigma = 2),
+#'                                type = "expected")
+#' print(info_exp)
 fisher_information <- function(spec,
                                y,
                                par,
                                type = c("observed", "expected"),
-                               method = c("hessian")) {
+                               method = c("hessian"),
+                               cl = NULL) {
   # Validate inputs
   if (!is_model_spec(spec)) {
     stop("`spec` must be a model_spec object", call. = FALSE)
@@ -62,10 +87,6 @@ fisher_information <- function(spec,
 
   type <- match.arg(type)
   method <- match.arg(method)
-
-  if (type == "expected") {
-    stop("Expected information not yet implemented", call. = FALSE)
-  }
 
   # Validate and prepare parameters
   if (is.list(par)) par <- unlist(par)
@@ -81,16 +102,12 @@ fisher_information <- function(spec,
          call. = FALSE)
   }
 
-  # Compute Hessian using numDeriv
-  loglik_fn <- function(theta) {
-    names(theta) <- spec$par_names
-    loglik(spec, y, theta)
+  if (type == "observed") {
+    info_matrix <- compute_observed_info(spec, y, par)
+  } else {
+    info_matrix <- compute_expected_info(spec, y, par, cl)
   }
 
-  hess <- numDeriv::hessian(loglik_fn, par)
-
-  # Fisher information is negative Hessian
-  info_matrix <- -hess
   rownames(info_matrix) <- spec$par_names
   colnames(info_matrix) <- spec$par_names
 
@@ -119,15 +136,64 @@ fisher_information <- function(spec,
       n_par = spec$n_par,
       par = par,
       par_names = spec$par_names,
-      n_obs = length(y)
+      n_obs = length(y),
+      type = type
     ),
     class = "fisher_info"
   )
 }
 
+#' Compute observed Fisher information (negative Hessian)
+#' @noRd
+compute_observed_info <- function(spec, y, par) {
+  loglik_fn <- function(theta) {
+    names(theta) <- spec$par_names
+    loglik(spec, y, theta)
+  }
+
+  hess <- numDeriv::hessian(loglik_fn, par)
+  -hess
+}
+
+#' Compute expected Fisher information (OPG estimator)
+#' @noRd
+compute_expected_info <- function(spec, y, par, cl = NULL) {
+  n_obs <- length(y)
+  n_par <- length(par)
+
+  # Worker function for single observation score
+  compute_score_i <- function(i) {
+    loglik_i <- function(theta) {
+      names(theta) <- spec$par_names
+      loglik(spec, y[i], theta)
+    }
+    numDeriv::grad(loglik_i, par)
+  }
+
+  # Compute per-observation score contributions
+  if (!is.null(cl)) {
+    # Export required objects to cluster
+    parallel::clusterExport(cl, c("spec", "y", "par"), envir = environment())
+    score_list <- parallel::parLapply(cl, seq_len(n_obs), compute_score_i)
+    scores <- do.call(rbind, score_list)
+  } else {
+    scores <- matrix(0, nrow = n_obs, ncol = n_par)
+    for (i in seq_len(n_obs)) {
+      scores[i, ] <- compute_score_i(i)
+    }
+  }
+
+  # OPG estimator: sum of outer products of scores
+  # I = sum_i(s_i * s_i')
+  info_matrix <- crossprod(scores)
+
+  info_matrix
+}
+
 #' @export
 print.fisher_info <- function(x, ...) {
-  cat("<fisher_info> at par = (",
+  type_str <- if (!is.null(x$type) && x$type == "expected") "expected" else "observed"
+  cat(sprintf("<fisher_info> (%s) at par = (", type_str),
       paste(sprintf("%s=%.3g", x$par_names, x$par), collapse = ", "),
       ")\n", sep = "")
 
@@ -146,9 +212,15 @@ print.fisher_info <- function(x, ...) {
 
 #' @export
 summary.fisher_info <- function(object, ...) {
+  type_str <- if (!is.null(object$type) && object$type == "expected") {
+    "Expected (OPG)"
+  } else {
+    "Observed (Hessian)"
+  }
   cat("Fisher Information Analysis\n")
   cat(strrep("=", 50), "\n\n")
 
+  cat("Type:", type_str, "\n")
   cat("Parameters:", paste(object$par_names, collapse = ", "), "\n")
   cat("Evaluated at:", paste(sprintf("%s=%.4g", object$par_names, object$par),
                              collapse = ", "), "\n")

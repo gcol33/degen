@@ -4,7 +4,15 @@
 \alias{equivalence_classes}
 \title{Find equivalence classes among multiple models}
 \usage{
-equivalence_classes(specs, y, n_points = 50, tol = 1e-06, verbose = FALSE)
+equivalence_classes(
+  specs,
+  y,
+  n_points = 50,
+  tol = 1e-06,
+  verbose = FALSE,
+  progress = interactive(),
+  cl = NULL
+)
 }
 \arguments{
 \item{specs}{A named list of \code{model_spec} objects}
@@ -16,6 +24,12 @@ equivalence_classes(specs, y, n_points = 50, tol = 1e-06, verbose = FALSE)
 \item{tol}{Tolerance for equivalence (default 1e-6)}
 
 \item{verbose}{Logical; print progress}
+
+\item{progress}{Logical; show progress bar with ETA (default TRUE in
+interactive sessions)}
+
+\item{cl}{Optional parallel cluster from \code{setup_cluster()}. If provided,
+pairwise comparisons run in parallel.}
 }
 \value{
 An S3 object of class \code{equiv_classes} containing:

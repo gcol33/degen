@@ -1,0 +1,335 @@
+---
+title: "Case Studies"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Case Studies}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(degen)
+```
+
+This vignette presents real-world examples of equivalence testing and identifiability analysis using the degen package.
+
+## Case Study 1: Competing Ecological Models
+
+Population ecologists often fit multiple models to count data, each representing different biological hypotheses about growth dynamics. A key question is whether these models are distinguishable given the data.
+
+### The models
+
+We compare three classic growth models:
+
+1. **Exponential growth**: Unlimited growth at constant rate
+2. **Logistic growth**: Growth limited by carrying capacity (symmetric S-curve)
+3. **Gompertz growth**: Growth limited by carrying capacity (asymmetric S-curve)
+
+```{r ecological-setup}
+# Load the example dataset
+data(ecological_models)
+
+# The data: 50 population counts over time
+y <- ecological_models$y
+plot(y, type = "b", xlab = "Time", ylab = "Population count",
+     main = "Simulated population data")
+```
+
+### Examining the models
+
+```{r ecological-models}
+# The three competing models
+models <- ecological_models$models
+
+# View their specifications
+print(models$exponential)
+print(models$logistic)
+print(models$gompertz)
+```
+
+### Testing equivalence
+
+Are any of these models observationally equivalent?
+
+```{r ecological-compare}
+# Find equivalence classes among the models
+classes <- equivalence_classes(models, y, n_points = 25,
+                               tol = 1e-4, progress = FALSE)
+print(classes)
+```
+
+### Interpretation
+
+```{r ecological-interpret}
+# View the pairwise discrepancies
+cat("Pairwise maximum discrepancies:\n")
+print(round(classes$discrepancies, 4))
+
+# Check specific pairs
+cat("\nAre exponential and logistic equivalent?",
+    are_equivalent(classes, "exponential", "logistic"), "\n")
+cat("Are logistic and gompertz equivalent?",
+    are_equivalent(classes, "logistic", "gompertz"), "\n")
+```
+
+The three growth models form separate equivalence classes, meaning they make distinguishable predictions. This is expected because:
+
+- Exponential growth predicts unbounded increase
+- Logistic and Gompertz both have carrying capacities but differ in their approach curves
+
+### Visualizing the comparison
+
+```{r ecological-plot}
+plot(classes)
+```
+
+---
+
+## Case Study 2: Non-Identifiable Mixture Model
+
+Mixture models exhibit a classic identifiability problem: label switching. Swapping component labels produces a different parameterization with identical likelihood.
+
+### The model
+
+```{r mixture-setup}
+# Load the mixture model example
+data(mixture_model)
+
+y <- mixture_model$y
+spec <- mixture_model$spec
+
+# View the data
+hist(y, breaks = 30, main = "Mixture data", xlab = "Value", col = "lightblue")
+```
+
+### Label switching equivalence
+
+The true parameters and their label-swapped version:
+
+```{r mixture-params}
+true_par <- mixture_model$true_params
+swapped_par <- mixture_model$swapped_params
+
+cat("True parameters:\n")
+print(true_par)
+
+cat("\nSwapped parameters:\n")
+print(swapped_par)
+```
+
+Both parameter sets produce the same likelihood:
+
+```{r mixture-likelihood}
+ll_true <- loglik(spec, y, true_par)
+ll_swapped <- loglik(spec, y, swapped_par)
+
+cat("Log-likelihood at true params:", ll_true, "\n")
+cat("Log-likelihood at swapped params:", ll_swapped, "\n")
+cat("Difference:", abs(ll_true - ll_swapped), "\n")
+```
+
+### Identifiability analysis
+
+```{r mixture-identifiability}
+# Check identifiability at the true parameters
+id_check <- identifiability_check(spec, y, par = true_par)
+print(id_check)
+```
+
+### Fisher information
+
+```{r mixture-fisher}
+info <- fisher_information(spec, y, par = true_par)
+print(info)
+
+cat("\nCondition number:", info_condition(info), "\n")
+cat("Eigenvalues:", round(info_eigenvalues(info), 4), "\n")
+```
+
+### Implications
+
+The mixture model shows interesting behavior:
+
+1. **At a single point**, the Fisher information may appear well-conditioned
+2. **Globally**, there exist multiple parameter settings with identical likelihood
+3. **In practice**, MCMC samplers may jump between modes, and optimizers may find different solutions depending on starting values
+
+This is *practical* non-identifiability due to the model's symmetry, rather than *structural* non-identifiability from rank deficiency.
+
+---
+
+## Case Study 3: Structural Non-Identifiability
+
+Some models have parameters that fundamentally cannot be identified regardless of sample size. This occurs when different parameter values produce identical likelihoods for all possible data.
+
+### The sum model
+
+```{r nonid-setup}
+# Load the non-identifiable example
+data(nonidentifiable_example)
+
+y <- nonidentifiable_example$y
+spec <- nonidentifiable_example$spec
+
+cat("Model:", spec$name, "\n")
+cat("Parameters:", paste(spec$par_names, collapse = ", "), "\n")
+cat("True sum (a + b):", nonidentifiable_example$true_sum, "\n")
+```
+
+### Why is this non-identifiable?
+
+The model is: $y_i \sim \text{Normal}(a + b, 1)$
+
+Only the sum $(a + b)$ appears in the likelihood. Any values of $a$ and $b$ that sum to the same total are indistinguishable.
+
+```{r nonid-demo}
+# Different (a, b) pairs with the same sum
+par1 <- c(a = 2, b = 3)   # sum = 5
+par2 <- c(a = 0, b = 5)   # sum = 5
+par3 <- c(a = 5, b = 0)   # sum = 5
+par4 <- c(a = -1, b = 6)  # sum = 5
+
+cat("All pairs sum to 5:\n")
+cat("(2, 3):", loglik(spec, y, par1), "\n")
+cat("(0, 5):", loglik(spec, y, par2), "\n")
+cat("(5, 0):", loglik(spec, y, par3), "\n")
+cat("(-1, 6):", loglik(spec, y, par4), "\n")
+```
+
+### Fisher information analysis
+
+```{r nonid-fisher}
+info <- fisher_information(spec, y, par = c(a = 2, b = 3))
+print(info)
+
+cat("\nRank:", info_rank(info), "(out of", length(spec$par_names), "parameters)\n")
+```
+
+### Finding the non-identifiable direction
+
+```{r nonid-null}
+null_dir <- null_directions(info)
+cat("Null direction(s):\n")
+print(null_dir)
+```
+
+The null direction $(1, -1)$ (or equivalently $(-1, 1)$) tells us that moving $a$ up by some amount while moving $b$ down by the same amount leaves the likelihood unchanged.
+
+### Identifiability check
+
+```{r nonid-check}
+id_result <- identifiability_check(spec, y, par = c(a = 2, b = 3))
+print(id_result)
+```
+
+### Resolution: Reparameterization
+
+The solution is to estimate what *is* identifiable:
+
+```{r nonid-reparam}
+# Reparameterized model: estimate the sum directly
+reparam_spec <- model_spec(
+  loglik_fn = function(y, total) {
+    sum(dnorm(y, mean = total, sd = 1, log = TRUE))
+  },
+  par_names = "total",
+  par_bounds = list(total = c(-20, 20)),
+  name = "Reparameterized (sum only)"
+)
+
+# Now fully identifiable
+id_reparam <- identifiability_check(reparam_spec, y, par = c(total = 5))
+print(id_reparam)
+```
+
+---
+
+## Case Study 4: Equivalent Parameterizations
+
+Different parameterizations of the same distribution are mathematically equivalent. Testing this serves as a validation that the equivalence detection works correctly.
+
+### Setup
+
+```{r equiv-setup}
+# Load equivalent model pairs
+data(equivalent_models)
+
+# First pair: Exponential vs Gamma(shape=1)
+pair1 <- equivalent_models[[1]]
+cat("Pair 1:", pair1$description, "\n")
+```
+
+### Testing the exponential-gamma equivalence
+
+```{r equiv-test1}
+# Generate exponential data
+set.seed(42)
+y <- rexp(100, rate = 2)
+
+# Create equivalence pair
+ep <- equivalence_pair(pair1$model_a, pair1$model_b)
+
+# Compare surfaces
+result <- compare_surfaces(ep, y, n_points = 30, tol = 1e-6, progress = FALSE)
+print(result)
+```
+
+### Normal with SD vs variance parameterization
+
+```{r equiv-test2}
+pair2 <- equivalent_models[[2]]
+cat("\nPair 2:", pair2$description, "\n")
+
+# Generate normal data
+y_norm <- rnorm(100, mean = 5, sd = 2)
+
+# Test equivalence
+ep2 <- equivalence_pair(pair2$model_a, pair2$model_b)
+result2 <- compare_surfaces(ep2, y_norm, n_points = 30, tol = 1e-4, progress = FALSE)
+print(result2)
+```
+
+### Weibull-exponential equivalence
+
+```{r equiv-test3}
+pair3 <- equivalent_models[[3]]
+cat("\nPair 3:", pair3$description, "\n")
+
+# Test on exponential data
+ep3 <- equivalence_pair(pair3$model_a, pair3$model_b)
+result3 <- compare_surfaces(ep3, y, n_points = 30, tol = 1e-6, progress = FALSE)
+print(result3)
+```
+
+### Why this matters
+
+Detecting known equivalences validates:
+
+1. The numerical precision of the comparison algorithm
+2. That parameter bounds are appropriate
+3. That the tolerance setting captures true equivalence
+
+---
+## Summary
+
+| Case Study | Type | Key Finding |
+|------------|------|-------------|
+| Ecological models | Competing hypotheses | Models distinguishable |
+| Mixture model | Label switching | Practical non-identifiability |
+| Sum model | Structural | Rank-deficient Fisher information |
+| Reparameterizations | Validation | Known equivalences detected |
+
+### Best practices from these examples
+
+1. **Always check identifiability** before interpreting fitted parameters
+2. **Consider reparameterization** when structural non-identifiability is detected
+3. **Be aware of symmetries** in models like mixtures
+4. **Use multiple starting points** when fitting potentially non-identifiable models
+5. **Report null directions** - they often have meaningful interpretation

@@ -1,0 +1,308 @@
+---
+title: "Identifiability Diagnostics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Identifiability Diagnostics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(degen)
+```
+
+## What is identifiability?
+
+A parameter is **identifiable** if its value can be uniquely determined from the data. When parameters are non-identifiable, the likelihood function is flat in some direction, meaning infinitely many parameter values produce the same likelihood.
+
+## Types of identifiability problems
+
+### Structural non-identifiability
+
+Some parameters cannot be identified regardless of sample size:
+
+```{r structural}
+# Only a + b is identifiable, not a and b separately
+nonid_spec <- model_spec(
+  loglik_fn = function(y, a, b) {
+    sum(dnorm(y, mean = a + b, sd = 1, log = TRUE))
+  },
+  par_names = c("a", "b"),
+  par_bounds = list(a = c(-10, 10), b = c(-10, 10)),
+  name = "Non-identifiable sum"
+)
+```
+
+### Weak identifiability
+
+Parameters may be theoretically identifiable but poorly determined in practice:
+
+```{r weak}
+# With limited data, variance-covariance can be hard to estimate
+bivariate_spec <- model_spec(
+  loglik_fn = function(y, mu1, mu2, sigma1, sigma2, rho) {
+    # Simplified bivariate normal (ignoring rho for this example)
+    ll <- dnorm(y[, 1], mu1, sigma1, log = TRUE) +
+          dnorm(y[, 2], mu2, sigma2, log = TRUE)
+    sum(ll)
+  },
+  par_names = c("mu1", "mu2", "sigma1", "sigma2", "rho"),
+  par_bounds = list(
+    mu1 = c(-10, 10), mu2 = c(-10, 10),
+    sigma1 = c(0.01, 10), sigma2 = c(0.01, 10),
+    rho = c(-0.99, 0.99)
+  ),
+  name = "Bivariate normal"
+)
+```
+
+## Basic identifiability check
+
+Use `identifiability_check()` for a comprehensive assessment:
+
+```{r basic-check}
+set.seed(42)
+y <- rnorm(100, mean = 5, sd = 1)
+
+# Check the non-identifiable model
+result <- identifiability_check(nonid_spec, y, par = c(a = 2, b = 3))
+print(result)
+```
+
+### Understanding the output
+
+The result shows:
+
+- **Parameter classifications**: Each parameter is classified as identified, weakly identified, or non-identifiable
+- **Condition number**: High values (> 10^6) suggest ill-conditioning
+- **Rank deficiency**: Indicates how many parameters are non-identifiable
+
+## Fisher information analysis
+
+### Computing Fisher information
+
+The Fisher information matrix quantifies how much information the data provide about parameters:
+
+```{r fisher-info}
+info <- fisher_information(nonid_spec, y, par = c(a = 2, b = 3))
+print(info)
+```
+
+### Eigenvalue analysis
+
+Eigenvalues reveal identifiability structure:
+
+```{r eigenvalues}
+# Get eigenvalues
+info_eigenvalues(info)
+
+# Condition number (ratio of largest to smallest eigenvalue)
+info_condition(info)
+
+# Rank (number of identifiable directions)
+info_rank(info)
+```
+
+### Finding non-identifiable directions
+
+```{r null-directions}
+# Direction(s) along which likelihood is flat
+null_directions(info)
+```
+
+For the sum model, the null direction is (1, -1), meaning a and b can trade off while keeping a + b constant.
+
+## Visualizing identifiability
+
+### Eigenvalue spectrum
+
+```{r plot-eigenvalues}
+plot(info)
+```
+
+### Profile likelihood
+
+Profile likelihood examines each parameter individually:
+
+```{r profile, eval=FALSE}
+# Profile likelihood for parameter 'a'
+profile <- profile_likelihood(nonid_spec, y, par = c(a = 2, b = 3),
+                              which_par = "a", n_points = 20)
+plot_profile_likelihood(profile)
+```
+
+## Expected vs. observed information
+
+### Observed information
+
+Computed from the Hessian of the log-likelihood at a specific point:
+
+```{r observed}
+obs_info <- fisher_information(nonid_spec, y, par = c(a = 2, b = 3),
+                                type = "observed")
+```
+
+### Expected information
+
+Computed as the average outer product of the score across observations:
+
+```{r expected}
+exp_info <- fisher_information(nonid_spec, y, par = c(a = 2, b = 3),
+                                type = "expected")
+```
+
+## Practical identifiability workflow
+
+### Step 1: Initial check
+
+```{r workflow1}
+# Define your model
+model <- model_spec(
+  loglik_fn = function(y, alpha, beta, gamma) {
+    mu <- alpha + beta * (1 - exp(-gamma * seq_along(y)))
+    sum(dnorm(y, mean = mu, sd = 1, log = TRUE))
+  },
+  par_names = c("alpha", "beta", "gamma"),
+  par_bounds = list(
+    alpha = c(-10, 10),
+    beta = c(0.01, 10),
+    gamma = c(0.01, 5)
+  ),
+  name = "Growth model"
+)
+
+# Generate test data
+set.seed(123)
+n <- 50
+true_par <- c(alpha = 1, beta = 5, gamma = 0.5)
+mu_true <- true_par["alpha"] + true_par["beta"] * (1 - exp(-true_par["gamma"] * (1:n)))
+y_growth <- rnorm(n, mean = mu_true, sd = 1)
+```
+
+### Step 2: Run diagnostics
+
+```{r workflow2}
+# Check identifiability at estimated values
+check <- identifiability_check(model, y_growth, par = true_par)
+print(check)
+```
+
+### Step 3: Examine Fisher information
+
+```{r workflow3}
+info <- fisher_information(model, y_growth, par = true_par)
+cat("Condition number:", info_condition(info), "\n")
+cat("Eigenvalues:", round(info_eigenvalues(info), 4), "\n")
+```
+
+### Step 4: Profile likelihood (if needed)
+
+When parameters appear weakly identifiable, profile likelihood provides deeper insight:
+
+```{r workflow4, eval=FALSE}
+# Profile each parameter
+for (p in c("alpha", "beta", "gamma")) {
+  profile <- profile_likelihood(model, y_growth, par = true_par,
+                                which_par = p, n_points = 30)
+  plot_profile_likelihood(profile)
+}
+```
+
+## Addressing identifiability issues
+
+### Reparameterization
+
+Transform to identifiable parameters:
+
+```{r reparam}
+# Instead of estimating a and b separately,
+# estimate their sum (which IS identifiable)
+reparam_spec <- model_spec(
+  loglik_fn = function(y, sum_ab) {
+    sum(dnorm(y, mean = sum_ab, sd = 1, log = TRUE))
+  },
+  par_names = "sum_ab",
+  par_bounds = list(sum_ab = c(-20, 20)),
+  name = "Reparameterized"
+)
+
+check_reparam <- identifiability_check(reparam_spec, y, par = c(sum_ab = 5))
+print(check_reparam)
+```
+
+### Fixing parameters
+
+Fix non-identifiable parameters to interpretable values:
+
+```{r fixing}
+# Fix b = 0 and only estimate a
+fixed_spec <- model_spec(
+  loglik_fn = function(y, a) {
+    sum(dnorm(y, mean = a + 0, sd = 1, log = TRUE))  # b fixed at 0
+  },
+  par_names = "a",
+  name = "Fixed b"
+)
+```
+
+### Adding constraints
+
+Impose constraints based on domain knowledge:
+
+```{r constraints}
+# Constrain a > b (not directly enforceable, but useful conceptually)
+# Often implemented via transformation
+constrained_spec <- model_spec(
+  loglik_fn = function(y, a, diff) {
+    b <- a - exp(diff)  # b = a - exp(diff), so b < a always
+    sum(dnorm(y, mean = a + b, sd = 1, log = TRUE))
+  },
+  par_names = c("a", "diff"),
+  name = "Constrained"
+)
+```
+
+## Model diagnostics
+
+### Full diagnostic report
+
+```{r diagnose, eval=FALSE}
+diag <- diagnose_model(model, y_growth, par = true_par)
+print(diag)
+```
+
+### Gradient checking
+
+Verify that numerical derivatives are accurate:
+
+```{r gradient-check, eval=FALSE}
+check_gradient(model, y_growth, par = true_par)
+```
+
+## Interpreting condition numbers
+
+| Condition Number | Interpretation |
+|-----------------|----------------|
+| < 100 | Well-conditioned, all parameters identifiable |
+| 100 - 10^4 | Moderate conditioning, some weak identifiability |
+| 10^4 - 10^8 | Poorly conditioned, likely identifiability issues |
+| > 10^8 | Severely ill-conditioned, structural non-identifiability |
+
+## Best practices
+
+1. **Always check identifiability** before drawing conclusions from fitted parameters
+
+2. **Use multiple starting points** to detect if optimization finds different solutions
+
+3. **Examine profile likelihoods** for parameters with high uncertainty
+
+4. **Consider the condition number** as a summary diagnostic
+
+5. **Report null directions** when non-identifiability is detected - they often have meaningful interpretation

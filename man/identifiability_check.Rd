@@ -10,7 +10,8 @@ identifiability_check(
   par = NULL,
   level = c("local", "profile"),
   threshold = 0.01,
-  verbose = FALSE
+  verbose = FALSE,
+  cl = NULL
 )
 }
 \arguments{
@@ -27,6 +28,9 @@ find MLE first.}
 \item{threshold}{Eigenvalue threshold for non-identifiability (default 0.01)}
 
 \item{verbose}{Logical; print progress information}
+
+\item{cl}{Optional parallel cluster from \code{setup_cluster()}. If provided,
+profile likelihood computations run in parallel.}
 }
 \value{
 An S3 object of class \code{identifiability_result} containing:
