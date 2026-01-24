@@ -1,5 +1,7 @@
 ---
 title: "Case Studies"
+author: "Gilles Colling"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Case Studies}
@@ -7,14 +9,13 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
 )
-```
-
-```{r setup}
 library(degen)
 ```
 
@@ -29,7 +30,9 @@ Population ecologists often fit multiple models to count data, each representing
 We compare three classic growth models:
 
 1. **Exponential growth**: Unlimited growth at constant rate
+
 2. **Logistic growth**: Growth limited by carrying capacity (symmetric S-curve)
+
 3. **Gompertz growth**: Growth limited by carrying capacity (asymmetric S-curve)
 
 ```{r ecological-setup}
@@ -38,6 +41,9 @@ data(ecological_models)
 
 # The data: 50 population counts over time
 y <- ecological_models$y
+```
+
+```{r ecological-plot-data, fig.alt="Line plot showing simulated population counts over 50 time points. The data shows an initial growth phase that levels off, suggesting density-dependent dynamics."}
 plot(y, type = "b", xlab = "Time", ylab = "Population count",
      main = "Simulated population data")
 ```
@@ -82,11 +88,12 @@ cat("Are logistic and gompertz equivalent?",
 The three growth models form separate equivalence classes, meaning they make distinguishable predictions. This is expected because:
 
 - Exponential growth predicts unbounded increase
+
 - Logistic and Gompertz both have carrying capacities but differ in their approach curves
 
 ### Visualizing the comparison
 
-```{r ecological-plot}
+```{r ecological-plot, fig.alt="Heatmap showing equivalence relationships between exponential, logistic, and Gompertz growth models. All three models form separate equivalence classes, indicating they are distinguishable given the data."}
 plot(classes)
 ```
 
@@ -104,7 +111,9 @@ data(mixture_model)
 
 y <- mixture_model$y
 spec <- mixture_model$spec
+```
 
+```{r mixture-hist, fig.alt="Histogram of mixture model data showing a bimodal distribution with two distinct peaks, characteristic of a two-component Gaussian mixture."}
 # View the data
 hist(y, breaks = 30, main = "Mixture data", xlab = "Value", col = "lightblue")
 ```
@@ -158,7 +167,9 @@ cat("Eigenvalues:", round(info_eigenvalues(info), 4), "\n")
 The mixture model shows interesting behavior:
 
 1. **At a single point**, the Fisher information may appear well-conditioned
+
 2. **Globally**, there exist multiple parameter settings with identical likelihood
+
 3. **In practice**, MCMC samplers may jump between modes, and optimizers may find different solutions depending on starting values
 
 This is *practical* non-identifiability due to the model's symmetry, rather than *structural* non-identifiability from rank deficiency.
@@ -313,7 +324,9 @@ print(result3)
 Detecting known equivalences validates:
 
 1. The numerical precision of the comparison algorithm
+
 2. That parameter bounds are appropriate
+
 3. That the tolerance setting captures true equivalence
 
 ---
@@ -329,7 +342,25 @@ Detecting known equivalences validates:
 ### Best practices from these examples
 
 1. **Always check identifiability** before interpreting fitted parameters
+
 2. **Consider reparameterization** when structural non-identifiability is detected
+
 3. **Be aware of symmetries** in models like mixtures
+
 4. **Use multiple starting points** when fitting potentially non-identifiable models
+
 5. **Report null directions** - they often have meaningful interpretation
+
+## See Also
+
+- `vignette("introduction")` - Package overview and quick start
+
+- `vignette("comparing-models")` - Detailed comparison workflows
+
+- `vignette("identifiability-diagnostics")` - In-depth identifiability analysis
+
+## Session Info
+
+```{r}
+sessionInfo()
+```

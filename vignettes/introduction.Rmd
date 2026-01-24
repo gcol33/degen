@@ -1,5 +1,7 @@
 ---
 title: "Introduction to degen"
+author: "Gilles Colling"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to degen}
@@ -7,16 +9,32 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
 )
-```
-
-```{r setup}
 library(degen)
 ```
+
+## Installation
+
+```{r, eval = FALSE}
+# Install from CRAN (when available)
+install.packages("degen")
+
+# Or install development version from GitHub
+# install.packages("pak")
+pak::pak("gcol33/degen")
+```
+
+**Dependencies**:
+
+- **Required**: `Rcpp`, `numDeriv`
+
+- **Suggested** (for extended functionality): `brms`, `rstan`, `rstanarm` (Bayesian model extraction), `jsonlite` (JSON export)
 
 ## What is observational equivalence?
 
@@ -25,7 +43,9 @@ Two statistical models are **observationally equivalent** if they assign the sam
 This matters because:
 
 - Different model formulations may encode different mechanistic stories
+
 - If those formulations are observationally equivalent, the data cannot tell us which story is correct
+
 - Conclusions drawn from one formulation versus another are assumptions, not results
 
 ## What is identifiability?
@@ -37,7 +57,9 @@ A parameter is **identifiable** if its value can be uniquely determined from the
 `degen` provides tools to:
 
 1. **Detect observational equivalence** between model specifications
+
 2. **Diagnose identifiability problems** within a single model
+
 3. **Characterize equivalence classes** among multiple competing models
 
 ## Quick start
@@ -135,7 +157,9 @@ print(classes)
 A `model_spec` contains:
 
 - `loglik_fn`: A function with signature `function(y, ...)` returning the log-likelihood
+
 - `par_names`: Names of the parameters
+
 - `par_bounds`: Optional bounds for each parameter
 
 ### Equivalence detection
@@ -147,7 +171,9 @@ A `model_spec` contains:
 `identifiability_check()` uses:
 
 - **Fisher information**: The curvature of the log-likelihood surface
+
 - **Eigenvalue analysis**: Near-zero eigenvalues indicate non-identifiable directions
+
 - **Profile likelihood**: Optional deeper analysis of individual parameters
 
 ## When to use this package
@@ -155,16 +181,113 @@ A `model_spec` contains:
 This package is designed for researchers who:
 
 - Work with models where structural assumptions matter
+
 - Need to assess whether competing mechanistic hypotheses are empirically distinguishable
+
 - Want to diagnose why certain parameters are poorly estimated
 
 ## Limitations
 
 - This provides numerical evidence, not mathematical proof
+
 - Conclusions depend on the tolerance and number of test points
+
 - High-dimensional parameter spaces are computationally challenging
 
-## Further reading
+## Quick Reference
 
-- See `vignette("comparing-models")` for detailed comparison workflows
-- See `vignette("identifiability-diagnostics")` for in-depth identifiability analysis
+### Core Functions
+
+| Function | Purpose |
+|----------|---------|
+| `model_spec()` | Define a model via log-likelihood function |
+| `equivalence_pair()` | Pair two models for comparison |
+| `compare_surfaces()` | Test observational equivalence |
+| `fisher_information()` | Compute Fisher information matrix |
+| `identifiability_check()` | Diagnose parameter identifiability |
+| `equivalence_classes()` | Group multiple models by equivalence |
+
+### model_spec()
+
+```r
+model_spec(loglik_fn, par_names, par_bounds = NULL, name = NULL)
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `loglik_fn` | Function with signature `function(y, ...)` returning log-likelihood |
+| `par_names` | Character vector of parameter names |
+| `par_bounds` | Named list of `c(lower, upper)` bounds per parameter |
+| `name` | Optional model name for display |
+
+### compare_surfaces()
+
+```r
+compare_surfaces(pair, y, n_points = 50, tol = 1e-6, method = "grid")
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `pair` | `equivalence_pair` object | *required* |
+| `y` | Data vector/matrix | *required* |
+| `n_points` | Number of test points | `50` |
+| `tol` | Equivalence tolerance | `1e-6` |
+| `method` | `"grid"` or `"optimization"` | `"grid"` |
+
+### Distribution Helpers
+
+Pre-built `model_spec` constructors for common distributions:
+
+- `model_spec_normal()`, `model_spec_exponential()`, `model_spec_gamma()`
+
+- `model_spec_poisson()`, `model_spec_binomial()`, `model_spec_beta()`
+
+- `model_spec_lognormal()`, `model_spec_weibull()`, `model_spec_negbinom()`
+
+- `model_spec_uniform()`
+
+## Troubleshooting
+
+**"Parameter names don't match function arguments"**
+
+- Ensure `par_names` exactly match the argument names in `loglik_fn` (excluding `y`)
+
+- Example: if `loglik_fn = function(y, lambda) ...`, then `par_names = "lambda"`
+
+**Large discrepancies between equivalent models**
+
+- Increase `n_points` for finer sampling
+
+- Check that `par_bounds` cover the relevant parameter region
+
+- Tighten tolerance with `tol = 1e-8` for stricter comparison
+
+**Fisher information returns singular matrix**
+
+- This indicates non-identifiability; use `identifiability_check()` for diagnosis
+
+- Consider reparameterization (see `vignette("identifiability-diagnostics")`)
+
+**Slow performance with many parameters**
+
+- Reduce `n_points` for initial exploration
+
+- Use `method = "optimization"` for targeted search
+
+- Enable parallel processing with `parallel = TRUE` (requires cluster setup)
+
+## See Also
+
+- `vignette("model-specification")` - How to write log-likelihood functions
+
+- `vignette("comparing-models")` - Detailed comparison workflows
+
+- `vignette("identifiability-diagnostics")` - In-depth identifiability analysis
+
+- `vignette("case-studies")` - Real-world examples
+
+## Session Info
+
+```{r}
+sessionInfo()
+```

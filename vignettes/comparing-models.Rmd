@@ -1,5 +1,7 @@
 ---
 title: "Comparing Models"
+author: "Gilles Colling"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Comparing Models}
@@ -7,14 +9,13 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
 )
-```
-
-```{r setup}
 library(degen)
 ```
 
@@ -71,8 +72,11 @@ print(result)
 The key outputs are:
 
 - **equivalent**: Overall conclusion (TRUE/FALSE)
+
 - **max_discrepancy**: Largest difference in log-likelihood found
+
 - **ab_discrepancy**: Max discrepancy when mapping A → B
+
 - **ba_discrepancy**: Max discrepancy when mapping B → A
 
 ## Comparison methods
@@ -119,7 +123,9 @@ cat("Relaxed (tol=1e-4):", relaxed$equivalent, "max discrepancy:", relaxed$max_d
 **Guidelines**:
 
 - `1e-6` (default): Standard numerical precision
+
 - `1e-8`: Very strict, may flag numerical artifacts
+
 - `1e-4`: More permissive, allows for minor numerical differences
 
 ## Comparing non-equivalent models
@@ -203,7 +209,7 @@ equiv_to_exp <- find_equivalent_to(models, reference = "exp", y, n_points = 20)
 
 ### Equivalence matrix plot
 
-```{r plot-equiv}
+```{r plot-equiv, fig.alt="Heatmap showing pairwise equivalence relationships between three models (exp, gamma1, gamma2). Equivalent pairs shown in green, non-equivalent in red. Exponential and Gamma(1) are equivalent to each other but distinct from Gamma(2)."}
 # Visual matrix of equivalence relationships
 plot(classes)
 ```
@@ -212,7 +218,7 @@ plot(classes)
 
 For two-parameter models, visualize the likelihood surface:
 
-```{r likelihood-surface}
+```{r likelihood-surface, fig.alt="2D contour plot of the log-likelihood surface for a normal distribution model with parameters mu and sigma. Contour lines show likelihood levels, with the peak near the true parameter values (mu=5, sigma=2)."}
 # A two-parameter model
 norm_spec <- model_spec_normal()
 y_norm <- rnorm(50, mean = 5, sd = 2)
@@ -247,7 +253,9 @@ trace <- debug_comparison(pair, y, par = c(lambda = 2), direction = "A_to_B")
 A conclusion of equivalence means:
 
 - No counterexample was found within the tested parameter region
+
 - This is numerical evidence, not mathematical proof
+
 - The conclusion depends on `n_points` and `tol`
 
 To increase confidence:
@@ -260,4 +268,18 @@ result_thorough <- compare_surfaces(pair, y, n_points = 200, tol = 1e-8)
 set.seed(123); r1 <- compare_surfaces(pair, y, n_points = 50)
 set.seed(456); r2 <- compare_surfaces(pair, y, n_points = 50)
 set.seed(789); r3 <- compare_surfaces(pair, y, n_points = 50)
+```
+
+## See Also
+
+- `vignette("introduction")` - Package overview and quick start
+
+- `vignette("identifiability-diagnostics")` - When parameters can't be distinguished
+
+- `vignette("case-studies")` - Real-world examples
+
+## Session Info
+
+```{r}
+sessionInfo()
 ```

@@ -3,6 +3,12 @@ template:
   bootstrap: 5
   includes:
     in_header: pkgdown/mathjax-config.html
+figures:
+  dev: svglite
+  fig.ext: svg
+  fig.width: 7
+  fig.height: 5
+  bg: "#F5F6F8"
 navbar:
   structure:
     left:
@@ -18,6 +24,15 @@ navbar:
       menu:
       - text: Getting Started
         href: articles/introduction.html
+      - text: Writing Model Specifications
+        href: articles/model-specification.html
+      - text: Comparing Models
+        href: articles/comparing-models.html
+      - text: Identifiability Diagnostics
+        href: articles/identifiability-diagnostics.html
+      - text: Case Studies
+        href: articles/case-studies.html
+
 reference:
 - title: Model Specification
   desc: Define models via their log-likelihood functions
@@ -28,6 +43,24 @@ reference:
   - par_bounds
   - n_par
   - loglik
+  - validate_loglik
+  - diagnose_model
+  - check_gradient
+
+- title: Distribution Helpers
+  desc: Pre-built model specifications for common distributions
+  contents:
+  - model_spec_normal
+  - model_spec_exponential
+  - model_spec_gamma
+  - model_spec_poisson
+  - model_spec_binomial
+  - model_spec_beta
+  - model_spec_lognormal
+  - model_spec_weibull
+  - model_spec_negbinom
+  - model_spec_uniform
+
 - title: Model Comparison
   desc: Compare likelihood surfaces between models
   contents:
@@ -39,6 +72,8 @@ reference:
   - same_par_count
   - compare_surfaces
   - is_surface_comparison
+  - debug_comparison
+
 - title: Equivalence Classes
   desc: Group multiple models by equivalence
   contents:
@@ -47,8 +82,16 @@ reference:
   - n_classes
   - class_members
   - are_equivalent
-- title: Identifiability
-  desc: Diagnose identifiability issues within a model
+  - equivalence_matrix
+
+- title: Batch Comparison
+  desc: Compare multiple models systematically
+  contents:
+  - compare_all_pairs
+  - find_equivalent_to
+
+- title: Fisher Information
+  desc: Compute and analyze Fisher information matrices
   contents:
   - fisher_information
   - is_fisher_info
@@ -56,6 +99,76 @@ reference:
   - info_condition
   - info_rank
   - null_directions
+  - fisher_analytical
+  - symbolic_fisher
+
+- title: Identifiability
+  desc: Diagnose identifiability issues within a model
+  contents:
   - identifiability_check
   - is_identifiability_result
   - profile_likelihood
+  - profile_ci
+  - detect_linear_reparam
+  - check_exact_equivalence
+
+- title: Model Fitting
+  desc: Fit models and extract specifications from fitted objects
+  contents:
+  - fit_model
+  - model_spec_from_fit
+  - model_vcov
+  - starts_with("coef.")
+  - starts_with("vcov.")
+  - starts_with("confint.")
+
+- title: Simulation
+
+  desc: Simulate data from model specifications
+  contents:
+  - add_simulator
+  - can_simulate
+  - starts_with("simulate.")
+
+- title: Sensitivity Analysis
+  desc: Test robustness of equivalence conclusions
+  contents:
+
+  - sensitivity_analysis
+  - bootstrap_equivalence
+  - cross_validate_equivalence
+
+- title: Bayesian Methods
+  desc: Posterior-based model comparison
+  contents:
+  - compare_posteriors
+  - prior_sensitivity
+  - extract_samples
+
+- title: Visualization
+  desc: Plot results and diagnostics
+  contents:
+  - plot_likelihood_surface
+  - plot_profile_likelihood
+  - starts_with("plot.")
+
+- title: Export and Conversion
+  desc: Export results for reporting
+  contents:
+  - export_results
+  - to_latex
+  - starts_with("as.data.frame.")
+
+- title: Parallel Processing
+  desc: Enable parallel computation
+  contents:
+  - setup_cluster
+  - stop_cluster
+
+- title: Example Datasets
+  desc: Bundled datasets for examples and testing
+  contents:
+  - ecological_models
+  - equivalent_models
+  - mixture_model
+  - nonidentifiable_example

@@ -1,5 +1,7 @@
 ---
 title: "Writing Model Specifications"
+author: "Gilles Colling"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Writing Model Specifications}
@@ -7,14 +9,13 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
 )
-```
-
-```{r setup}
 library(degen)
 ```
 
@@ -27,7 +28,9 @@ The `model_spec` is the fundamental building block in degen. It encapsulates a s
 A model_spec requires three key components:
 
 1. **loglik_fn**: A function computing the log-likelihood
+
 2. **par_names**: Names of the model parameters
+
 3. **par_bounds**: (Optional) Bounds on parameter values
 
 ```{r basic-example}
@@ -123,14 +126,23 @@ loglik(norm_helper, y, c(mu = 5, sigma = 2))
 Available helpers include:
 
 - `model_spec_normal()` - Normal distribution
+
 - `model_spec_exponential()` - Exponential distribution
+
 - `model_spec_gamma()` - Gamma distribution
+
 - `model_spec_poisson()` - Poisson distribution
+
 - `model_spec_binomial()` - Binomial distribution
+
 - `model_spec_beta()` - Beta distribution
+
 - `model_spec_lognormal()` - Log-normal distribution
+
 - `model_spec_weibull()` - Weibull distribution
+
 - `model_spec_negbinom()` - Negative binomial distribution
+
 - `model_spec_uniform()` - Uniform distribution
 
 ## Parameter bounds
@@ -140,7 +152,9 @@ Bounds constrain where the package searches for equivalent parameters.
 ### Why bounds matter
 
 1. **Numerical stability**: Prevent evaluation at invalid values
+
 2. **Efficiency**: Focus search on meaningful regions
+
 3. **Physical constraints**: Enforce domain knowledge (e.g., rates must be positive)
 
 ```{r bounds}
@@ -289,4 +303,20 @@ fit <- lm(y ~ x, data = data)
 # Extract as model_spec
 spec <- model_spec_from_fit(fit)
 print(spec)
+```
+
+## See Also
+
+- `vignette("introduction")` - Package overview and quick start
+
+- `vignette("comparing-models")` - Using models for equivalence testing
+
+- `vignette("identifiability-diagnostics")` - Diagnosing parameter issues
+
+- `vignette("case-studies")` - Real-world examples
+
+## Session Info
+
+```{r}
+sessionInfo()
 ```

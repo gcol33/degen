@@ -1,5 +1,7 @@
 ---
 title: "Identifiability Diagnostics"
+author: "Gilles Colling"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Identifiability Diagnostics}
@@ -7,14 +9,13 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
 )
-```
-
-```{r setup}
 library(degen)
 ```
 
@@ -81,7 +82,9 @@ print(result)
 The result shows:
 
 - **Parameter classifications**: Each parameter is classified as identified, weakly identified, or non-identifiable
+
 - **Condition number**: High values (> 10^6) suggest ill-conditioning
+
 - **Rank deficiency**: Indicates how many parameters are non-identifiable
 
 ## Fisher information analysis
@@ -123,7 +126,7 @@ For the sum model, the null direction is (1, -1), meaning a and b can trade off 
 
 ### Eigenvalue spectrum
 
-```{r plot-eigenvalues}
+```{r plot-eigenvalues, fig.alt="Bar chart showing eigenvalue spectrum of the Fisher information matrix. One eigenvalue is positive indicating an identifiable direction, while the other is near zero indicating a non-identifiable direction (the null space)."}
 plot(info)
 ```
 
@@ -306,3 +309,19 @@ check_gradient(model, y_growth, par = true_par)
 4. **Consider the condition number** as a summary diagnostic
 
 5. **Report null directions** when non-identifiability is detected - they often have meaningful interpretation
+
+## See Also
+
+- `vignette("introduction")` - Package overview and quick start
+
+- `vignette("comparing-models")` - Model equivalence testing
+
+- `vignette("model-specification")` - Writing log-likelihood functions
+
+- `vignette("case-studies")` - Real-world examples
+
+## Session Info
+
+```{r}
+sessionInfo()
+```
