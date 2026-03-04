@@ -8,7 +8,7 @@ figures:
   fig.ext: svg
   fig.width: 7
   fig.height: 5
-  bg: "#F5F6F8"
+  bg: '#F5F6F8'
 navbar:
   structure:
     left:
@@ -32,7 +32,6 @@ navbar:
         href: articles/identifiability-diagnostics.html
       - text: Case Studies
         href: articles/case-studies.html
-
 reference:
 - title: Model Specification
   desc: Define models via their log-likelihood functions
@@ -46,7 +45,6 @@ reference:
   - validate_loglik
   - diagnose_model
   - check_gradient
-
 - title: Distribution Helpers
   desc: Pre-built model specifications for common distributions
   contents:
@@ -60,7 +58,6 @@ reference:
   - model_spec_weibull
   - model_spec_negbinom
   - model_spec_uniform
-
 - title: Model Comparison
   desc: Compare likelihood surfaces between models
   contents:
@@ -73,7 +70,6 @@ reference:
   - compare_surfaces
   - is_surface_comparison
   - debug_comparison
-
 - title: Equivalence Classes
   desc: Group multiple models by equivalence
   contents:
@@ -83,13 +79,11 @@ reference:
   - class_members
   - are_equivalent
   - equivalence_matrix
-
 - title: Batch Comparison
   desc: Compare multiple models systematically
   contents:
   - compare_all_pairs
   - find_equivalent_to
-
 - title: Fisher Information
   desc: Compute and analyze Fisher information matrices
   contents:
@@ -101,7 +95,6 @@ reference:
   - null_directions
   - fisher_analytical
   - symbolic_fisher
-
 - title: Identifiability
   desc: Diagnose identifiability issues within a model
   contents:
@@ -111,7 +104,6 @@ reference:
   - profile_ci
   - detect_linear_reparam
   - check_exact_equivalence
-
 - title: Model Fitting
   desc: Fit models and extract specifications from fitted objects
   contents:
@@ -121,50 +113,41 @@ reference:
   - starts_with("coef.")
   - starts_with("vcov.")
   - starts_with("confint.")
-
 - title: Simulation
-
   desc: Simulate data from model specifications
   contents:
   - add_simulator
   - can_simulate
   - starts_with("simulate.")
-
 - title: Sensitivity Analysis
   desc: Test robustness of equivalence conclusions
   contents:
-
   - sensitivity_analysis
   - bootstrap_equivalence
   - cross_validate_equivalence
-
 - title: Bayesian Methods
   desc: Posterior-based model comparison
   contents:
   - compare_posteriors
   - prior_sensitivity
   - extract_samples
-
 - title: Visualization
   desc: Plot results and diagnostics
   contents:
   - plot_likelihood_surface
   - plot_profile_likelihood
   - starts_with("plot.")
-
 - title: Export and Conversion
   desc: Export results for reporting
   contents:
   - export_results
   - to_latex
   - starts_with("as.data.frame.")
-
 - title: Parallel Processing
   desc: Enable parallel computation
   contents:
   - setup_cluster
   - stop_cluster
-
 - title: Example Datasets
   desc: Bundled datasets for examples and testing
   contents:
