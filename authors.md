@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/gcol33/degen/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/gcol33/degen/blob/v0.10.0/DESCRIPTION)
 
 Colling G (2026). *degen: Detect Observational Equivalence and
 Non-Identifiability in Models*. R package version 0.10.0,
