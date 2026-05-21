@@ -84,7 +84,7 @@ These problems surface as convergence failures, ridge-like likelihood surfaces, 
 ## Installation
 
 ```r
-# install.packages("pak")
+install.packages("pak")
 pak::pak("gcol33/degen")
 ```
 
