@@ -26,7 +26,5 @@ spec <- model_spec(
   par_names = "lambda"
 )
 is_model_spec(spec)  # TRUE
-#> [1] TRUE
 is_model_spec(list())  # FALSE
-#> [1] FALSE
 ```

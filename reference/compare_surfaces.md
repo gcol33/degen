@@ -14,7 +14,9 @@ compare_surfaces(
   n_points = 100,
   method = c("grid", "optimization"),
   tol = 1e-06,
-  verbose = FALSE
+  verbose = FALSE,
+  progress = interactive(),
+  cl = NULL
 )
 ```
 
@@ -44,6 +46,17 @@ compare_surfaces(
 - verbose:
 
   Logical; print progress information
+
+- progress:
+
+  Logical; show progress bar with ETA (default TRUE in interactive
+  sessions). Set to FALSE to suppress progress output.
+
+- cl:
+
+  Optional parallel cluster from
+  [`setup_cluster()`](https://gcol33.github.io/degen/reference/setup_cluster.md).
+  If provided, grid points are evaluated in parallel.
 
 ## Value
 
@@ -107,10 +120,4 @@ set.seed(123)
 y <- rexp(100, rate = 2)
 result <- compare_surfaces(pair, y, n_points = 20)
 print(result)
-#> <surface_comparison>
-#> Conclusion: Models are NOT EQUIVALENT
-#> Points tested: 40
-#> Max discrepancy: 2.90e-06
-#> Tolerance: 1.00e-06
-#> Method: grid
 ```

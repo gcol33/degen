@@ -6,7 +6,15 @@ observationally equivalent and group them into equivalence classes.
 ## Usage
 
 ``` r
-equivalence_classes(specs, y, n_points = 50, tol = 1e-06, verbose = FALSE)
+equivalence_classes(
+  specs,
+  y,
+  n_points = 50,
+  tol = 1e-06,
+  verbose = FALSE,
+  progress = interactive(),
+  cl = NULL
+)
 ```
 
 ## Arguments
@@ -30,6 +38,17 @@ equivalence_classes(specs, y, n_points = 50, tol = 1e-06, verbose = FALSE)
 - verbose:
 
   Logical; print progress
+
+- progress:
+
+  Logical; show progress bar with ETA (default TRUE in interactive
+  sessions)
+
+- cl:
+
+  Optional parallel cluster from
+  [`setup_cluster()`](https://gcol33.github.io/degen/reference/setup_cluster.md).
+  If provided, pairwise comparisons run in parallel.
 
 ## Value
 
@@ -93,10 +112,4 @@ set.seed(123)
 y <- rexp(50, rate = 2)
 classes <- equivalence_classes(models, y, n_points = 10)
 print(classes)
-#> <equiv_classes>
-#> 3 models -> 3 equivalence classes
-#> 
-#> Class 1: exp
-#> Class 2: gamma1
-#> Class 3: gamma2
 ```

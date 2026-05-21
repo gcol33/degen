@@ -1,121 +1,250 @@
 # degen
 
-An R package for detecting observational equivalence, degeneracy, and
-non-identifiability in parametric models.
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![R-CMD-check](https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/gcol33/degen/graph/badge.svg)](https://app.codecov.io/gh/gcol33/degen)
+[![License:
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Purpose
+**Detect Observational Equivalence and Non-Identifiability in Parametric
+Models**
 
-Statistical models encode assumptions about data-generating processes.
-Different model formulations (different parameterizations, latent
-structures, or functional forms) can sometimes produce identical
-distributions over observable data. When this occurs, no amount of data
-can distinguish between them. The models are **observationally
-equivalent**.
+The `degen` package tests whether competing model specifications produce
+identical likelihood surfaces, diagnoses identifiability problems within
+a single model, and groups models into equivalence classes. Define
+models as log-likelihood functions, and `degen` tells you which ones the
+data can actually distinguish.
 
-This package provides tools to:
+## Quick Start
 
-- Detect whether two model specifications induce the same likelihood
-  surface
-- Diagnose identifiability problems within a single model
-- Characterize equivalence classes among competing formulations
+``` r
 
-## Definitions
+library(degen)
 
-**Observational equivalence**: Two models are observationally equivalent
-if they assign the same probability to every possible dataset. Formally,
-for all data $y$ in the sample space, there exist parameter values
-$\theta_{A}$ and $\theta_{B}$ such that
-$\mathcal{L}_{A}\left( y;\theta_{A} \right) = \mathcal{L}_{B}\left( y;\theta_{B} \right)$.
+# Define two models
+spec_exp  <- model_spec_exponential()
+spec_gam  <- model_spec_gamma(parameterization = "shape_rate")
 
-**Degeneracy**: A model exhibits degeneracy when multiple parameter
-configurations yield identical likelihoods. This is a failure of
-injectivity in the mapping from parameters to distributions.
+# Test if they produce the same likelihood surface
+pair <- equivalence_pair(spec_exp, spec_gam)
+result <- compare_surfaces(pair, y = rexp(200, rate = 2))
+print(result)
 
-**Non-identifiability**: A parameter is non-identifiable if the
-likelihood function is constant along some direction in parameter space.
-The data provide no information for distinguishing values along that
-direction.
+# Check identifiability of a single model
+info <- fisher_information(spec_gam, y = rgamma(200, 2, 3),
+                           par = c(shape = 2, rate = 3))
+identifiability_check(info)
+```
 
-These concepts are related but distinct. Degeneracy concerns the
-structure of a single model’s parameter space. Equivalence concerns
-relationships between different models. Both matter for inference.
+## Statement of Need
+
+Different parameterizations of a statistical model can produce the same
+distribution over observable data. When this happens, no amount of data
+will distinguish between them. Similarly, parameters may be locally
+non-identifiable: the likelihood is flat in some direction, making those
+parameters unestimable.
+
+These problems surface as convergence failures, ridge-like likelihood
+surfaces, or contradictory results across software packages. Diagnosing
+them usually requires manual comparison of likelihood functions.
+
+`degen` automates this with systematic comparison of likelihood
+surfaces, Fisher information diagnostics, profile likelihood analysis,
+and equivalence class detection. It is relevant wherever model structure
+matters: mixture models with label switching, mechanistic ecological
+models with competing functional forms, or hierarchical models where
+variance components trade off.
+
+## Features
+
+### Model Specification
+
+- **[`model_spec()`](https://gcol33.github.io/degen/reference/model_spec.md)**:
+  Define a model from any log-likelihood function
+- **Built-in distributions**:
+  [`model_spec_normal()`](https://gcol33.github.io/degen/reference/model_spec_normal.md),
+  [`model_spec_exponential()`](https://gcol33.github.io/degen/reference/model_spec_exponential.md),
+  [`model_spec_gamma()`](https://gcol33.github.io/degen/reference/model_spec_gamma.md),
+  [`model_spec_poisson()`](https://gcol33.github.io/degen/reference/model_spec_poisson.md),
+  [`model_spec_binomial()`](https://gcol33.github.io/degen/reference/model_spec_binomial.md),
+  [`model_spec_beta()`](https://gcol33.github.io/degen/reference/model_spec_beta.md),
+  [`model_spec_lognormal()`](https://gcol33.github.io/degen/reference/model_spec_lognormal.md),
+  [`model_spec_weibull()`](https://gcol33.github.io/degen/reference/model_spec_weibull.md),
+  [`model_spec_negbinom()`](https://gcol33.github.io/degen/reference/model_spec_negbinom.md),
+  [`model_spec_uniform()`](https://gcol33.github.io/degen/reference/model_spec_uniform.md)
+- **[`model_spec_from_fit()`](https://gcol33.github.io/degen/reference/model_spec_from_fit.md)**:
+  Extract specifications from fitted `lm` or `glm` objects
+- **[`simulate()`](https://rdrr.io/r/stats/simulate.html)**: Generate
+  data from any model specification
+
+### Equivalence Testing
+
+- **[`compare_surfaces()`](https://gcol33.github.io/degen/reference/compare_surfaces.md)**:
+  Compare likelihood surfaces between two models (grid or optimization)
+- **[`equivalence_pair()`](https://gcol33.github.io/degen/reference/equivalence_pair.md)**:
+  Create comparison objects with automatic parameter mapping
+- **[`compare_all_pairs()`](https://gcol33.github.io/degen/reference/compare_all_pairs.md)**:
+  Pairwise comparison across a list of models
+- **[`equivalence_classes()`](https://gcol33.github.io/degen/reference/equivalence_classes.md)**:
+  Group models into empirical equivalence classes
+- **[`detect_linear_reparam()`](https://gcol33.github.io/degen/reference/detect_linear_reparam.md)**:
+  Detect linear reparameterizations between models
+- **[`check_exact_equivalence()`](https://gcol33.github.io/degen/reference/check_exact_equivalence.md)**:
+  Symbolic equivalence checking
+
+### Identifiability Diagnostics
+
+- **[`fisher_information()`](https://gcol33.github.io/degen/reference/fisher_information.md)**:
+  Observed or expected Fisher information matrix
+- **[`identifiability_check()`](https://gcol33.github.io/degen/reference/identifiability_check.md)**:
+  Comprehensive analysis with eigenvalue decomposition
+- **[`null_directions()`](https://gcol33.github.io/degen/reference/null_directions.md)**:
+  Find directions of non-identifiability in parameter space
+- **[`profile_likelihood()`](https://gcol33.github.io/degen/reference/profile_likelihood.md)**:
+  Compute and plot profile likelihoods
+- **[`profile_ci()`](https://gcol33.github.io/degen/reference/profile_ci.md)**:
+  Confidence intervals from profile curves
+- **[`diagnose_model()`](https://gcol33.github.io/degen/reference/diagnose_model.md)**:
+  All-in-one diagnostic report
+
+### Robustness & Sensitivity
+
+- **[`sensitivity_analysis()`](https://gcol33.github.io/degen/reference/sensitivity_analysis.md)**:
+  Test robustness of equivalence to tolerance and grid settings
+- **[`bootstrap_equivalence()`](https://gcol33.github.io/degen/reference/bootstrap_equivalence.md)**:
+  Bootstrap resampling test
+- **[`cross_validate_equivalence()`](https://gcol33.github.io/degen/reference/cross_validate_equivalence.md)**:
+  Cross-validation test
+- **[`prior_sensitivity()`](https://gcol33.github.io/degen/reference/prior_sensitivity.md)**:
+  Bayesian prior sensitivity analysis
+
+### Bayesian Integration
+
+- **[`compare_posteriors()`](https://gcol33.github.io/degen/reference/compare_posteriors.md)**:
+  Compare posteriors from MCMC samples (brms, Stan, rstanarm)
+- **[`extract_samples()`](https://gcol33.github.io/degen/reference/extract_samples.md)**:
+  Extract posterior samples from fitted Bayesian models
+
+### Export
+
+- **[`export_results()`](https://gcol33.github.io/degen/reference/export_results.md)**:
+  Export to JSON, CSV, or markdown
+- **[`to_latex()`](https://gcol33.github.io/degen/reference/to_latex.md)**:
+  LaTeX output for papers
 
 ## Installation
 
 ``` r
-# From GitHub (development version)
-# install.packages("pak")
+
+install.packages("pak")
 pak::pak("gcol33/degen")
 ```
 
-## Basic Usage
+## Usage Examples
 
-Define two model specifications by providing log-likelihood functions:
+### Comparing Two Model Specifications
 
 ``` r
+
 library(degen)
 
-# Model A: simple exponential
-spec_a <- model_spec(
-  loglik_fn = function(y, lambda) sum(dexp(y, rate = lambda, log = TRUE)),
-  par_names = "lambda",
-  par_bounds = list(lambda = c(1e-6, Inf))
-)
+# Exponential vs Gamma(shape=1): are they distinguishable?
+spec_a <- model_spec_exponential()
+spec_b <- model_spec_gamma(parameterization = "shape_rate")
 
-# Model B: Gamma with shape fixed at 1 (equivalent to exponential)
-spec_b <- model_spec(
-  loglik_fn = function(y, rate) sum(dgamma(y, shape = 1, rate = rate, log = TRUE)),
-  par_names = "rate",
-  par_bounds = list(rate = c(1e-6, Inf))
-)
-
-# Compare likelihood surfaces
 pair <- equivalence_pair(spec_a, spec_b)
-result <- compare_surfaces(pair, y = rexp(100, rate = 2))
+result <- compare_surfaces(pair, y = rexp(200, rate = 2))
+result
 ```
 
-For identifiability diagnostics on a single model:
+### Identifiability Diagnostics
 
 ``` r
-# Check Fisher information for near-singularity
-info <- fisher_information(spec_a, y = rexp(100), par = c(lambda = 2))
-identifiability_check(info)
+
+# Check a two-parameter model
+spec <- model_spec_gamma(parameterization = "shape_rate")
+y <- rgamma(500, shape = 2, rate = 3)
+
+info <- fisher_information(spec, y = y, par = c(shape = 2, rate = 3))
+id_check <- identifiability_check(info)
+summary(id_check)
+
+# Profile likelihood for individual parameters
+prof <- profile_likelihood(spec, y = y, par = c(shape = 2, rate = 3),
+                           which = "shape")
+plot(prof)
 ```
 
-## What This Package Does Not Do
+### Equivalence Classes
 
-- **Model fitting**: `degen` does not estimate parameters. It examines
-  properties of likelihood functions.
-- **Model selection**: The package does not rank models by fit,
-  predictive accuracy, or information criteria.
-- **Causal inference**: Observational equivalence is a statement about
-  likelihoods, not about causal structure. Two models may be
-  observationally equivalent yet encode different causal claims.
-- **Automated model extraction**: Users must supply likelihood functions
-  explicitly. The package does not extract likelihoods from fitted model
-  objects.
+``` r
 
-## Intended Audience
+# Group multiple models by equivalence
+models <- list(
+  exp       = model_spec_exponential(),
+  gamma_sr  = model_spec_gamma(parameterization = "shape_rate"),
+  gamma_ss  = model_spec_gamma(parameterization = "shape_scale"),
+  weibull   = model_spec_weibull()
+)
 
-This package is designed for researchers who:
+classes <- equivalence_classes(models, y = rexp(200, rate = 2))
+print(classes)
+```
 
-- Work with models where structural assumptions matter (e.g., population
-  dynamics, species distribution models, mixture models)
-- Need to assess whether competing mechanistic hypotheses are
-  empirically distinguishable
-- Want to diagnose why certain parameters are poorly estimated
+### Sensitivity Analysis
 
-Familiarity with likelihood-based inference is assumed. The package
-provides diagnostics, not tutorials on identifiability theory.
+``` r
 
-## Related Work
+sens <- sensitivity_analysis(pair, y = rexp(200, rate = 2),
+                             tolerances = c(1e-4, 1e-6, 1e-8))
+summary(sens)
+```
 
-The problem of observational equivalence has a long history in
-econometrics, psychometrics, and structural equation modeling. This
-package does not replicate or replace specialized tools in those
-domains. It provides a general framework for likelihood-based
-equivalence detection applicable across disciplines.
+## Documentation
+
+- [Introduction](https://gcol33.github.io/degen/articles/introduction.html) -
+  Package overview and core concepts
+- [Model
+  Specification](https://gcol33.github.io/degen/articles/model-specification.html) -
+  Defining models
+- [Comparing
+  Models](https://gcol33.github.io/degen/articles/comparing-models.html) -
+  Equivalence testing
+- [Identifiability
+  Diagnostics](https://gcol33.github.io/degen/articles/identifiability-diagnostics.html) -
+  Fisher information and profile likelihoods
+- [Case
+  Studies](https://gcol33.github.io/degen/articles/case-studies.html) -
+  Practical applications
+- [Function Reference](https://gcol33.github.io/degen/reference/)
+
+## Support
+
+> “Software is like sex: it’s better when it’s free.” — Linus Torvalds
+
+I’m a PhD student who builds R packages in my free time because I
+believe good tools should be free and open. I started these projects for
+my own work and figured others might find them useful too.
+
+If this package saved you some time, buying me a coffee is a nice way to
+say thanks. It helps with my coffee addiction.
+
+[![Buy Me A
+Coffee](https://img.shields.io/badge/-Buy%20me%20a%20coffee-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/gcol33)
 
 ## License
 
-MIT
+MIT (see the LICENSE.md file)
+
+## Citation
+
+``` bibtex
+@software{degen,
+  author = {Colling, Gilles},
+  title = {degen: Detect Observational Equivalence and Non-Identifiability in Parametric Models},
+  year = {2025},
+  url = {https://github.com/gcol33/degen}
+}
+```

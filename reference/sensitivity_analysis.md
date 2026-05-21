@@ -1,0 +1,91 @@
+# Sensitivity analysis for equivalence testing
+
+Test how sensitive equivalence conclusions are to the choice of
+tolerance and number of grid points.
+
+## Usage
+
+``` r
+sensitivity_analysis(
+  pair,
+  y,
+  tol_range = c(1e-08, 1e-06, 1e-04, 0.01),
+  n_points_range = c(20, 50, 100),
+  method = c("grid", "optimization"),
+  progress = interactive()
+)
+```
+
+## Arguments
+
+- pair:
+
+  An `equivalence_pair` object
+
+- y:
+
+  Numeric vector of observed data
+
+- tol_range:
+
+  Numeric vector of tolerance values to test
+
+- n_points_range:
+
+  Integer vector of n_points values to test
+
+- method:
+
+  Comparison method: "grid" or "optimization"
+
+- progress:
+
+  Logical; show progress bar
+
+## Value
+
+An S3 object of class `sensitivity_result` containing:
+
+- results:
+
+  Data frame with columns: tol, n_points, equivalent, max_discrepancy
+
+- pair:
+
+  The equivalence pair tested
+
+- stable:
+
+  Logical; whether conclusion is stable across all settings
+
+- critical_tol:
+
+  Smallest tolerance at which models appear equivalent
+
+## Examples
+
+``` r
+exp_spec <- model_spec(
+  loglik_fn = function(y, lambda) sum(dexp(y, rate = lambda, log = TRUE)),
+  par_names = "lambda",
+  par_bounds = list(lambda = c(1e-6, 100)),
+  name = "Exponential"
+)
+
+gamma_spec <- model_spec(
+  loglik_fn = function(y, rate) sum(dgamma(y, shape = 1, rate = rate, log = TRUE)),
+  par_names = "rate",
+  par_bounds = list(rate = c(1e-6, 100)),
+  name = "Gamma(1)"
+)
+
+pair <- equivalence_pair(exp_spec, gamma_spec)
+set.seed(123)
+y <- rexp(50, rate = 2)
+
+# Test sensitivity to tolerance and grid size
+sens <- sensitivity_analysis(pair, y,
+  tol_range = c(1e-8, 1e-6, 1e-4),
+  n_points_range = c(20, 50))
+print(sens)
+```

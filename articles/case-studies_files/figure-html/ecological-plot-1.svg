@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='504.00pt' height='311.50pt' viewBox='0 0 504.00 311.50'>
+<g class='svglite'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+    .svglite g.glyphgroup path {
+      fill: inherit;
+      stroke: none;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #F5F6F8;'/>
+<defs>
+  <clipPath id='cpMC4wMHw1MDQuMDB8MC4wMHwzMTEuNTA='>
+    <rect x='0.00' y='0.00' width='504.00' height='311.50' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw1MDQuMDB8MC4wMHwzMTEuNTA=)'>
+<text x='266.40' y='34.47' text-anchor='middle' style='font-size: 14.40px; font-weight: bold; font-family: "Liberation Sans";' textLength='303.56px' lengthAdjust='spacingAndGlyphs'>Equivalence Classes (3 models -&gt; 3 classes)</text>
+</g>
+<defs>
+  <clipPath id='cpNTkuMDR8NDczLjc2fDU5LjA0fDIzOC4wNg=='>
+    <rect x='59.04' y='59.04' width='414.72' height='179.02' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpNTkuMDR8NDczLjc2fDU5LjA0fDIzOC4wNg==)'>
+<circle cx='321.65' cy='148.55' r='8.10' style='stroke-width: 0.75; stroke: #ED90A4; fill: #ED90A4;' />
+<circle cx='238.77' cy='100.70' r='8.10' style='stroke-width: 0.75; stroke: #7EBA68; fill: #7EBA68;' />
+<circle cx='238.77' cy='196.40' r='8.10' style='stroke-width: 0.75; stroke: #6FB1E7; fill: #6FB1E7;' />
+<circle cx='321.65' cy='148.55' r='8.10' style='stroke-width: 0.75;' />
+<circle cx='238.77' cy='100.70' r='8.10' style='stroke-width: 0.75;' />
+<circle cx='238.77' cy='196.40' r='8.10' style='stroke-width: 0.75;' />
+<text x='321.65' y='179.49' text-anchor='middle' style='font-size: 9.60px; font-family: "Liberation Sans";' textLength='49.02px' lengthAdjust='spacingAndGlyphs'>exponential</text>
+<text x='238.77' y='131.64' text-anchor='middle' style='font-size: 9.60px; font-family: "Liberation Sans";' textLength='29.30px' lengthAdjust='spacingAndGlyphs'>logistic</text>
+<text x='238.77' y='227.34' text-anchor='middle' style='font-size: 9.60px; font-family: "Liberation Sans";' textLength='39.95px' lengthAdjust='spacingAndGlyphs'>gompertz</text>
+<rect x='421.92' y='200.62' width='6.91' height='5.76' style='stroke-width: 0.75; fill: #ED90A4;' />
+<rect x='421.92' y='212.14' width='6.91' height='5.76' style='stroke-width: 0.75; fill: #7EBA68;' />
+<rect x='421.92' y='223.66' width='6.91' height='5.76' style='stroke-width: 0.75; fill: #6FB1E7;' />
+<text x='437.47' y='206.79' style='font-size: 9.60px; font-family: "Liberation Sans";' textLength='31.97px' lengthAdjust='spacingAndGlyphs'>Class 1</text>
+<text x='437.47' y='218.31' style='font-size: 9.60px; font-family: "Liberation Sans";' textLength='31.97px' lengthAdjust='spacingAndGlyphs'>Class 2</text>
+<text x='437.47' y='229.83' style='font-size: 9.60px; font-family: "Liberation Sans";' textLength='31.97px' lengthAdjust='spacingAndGlyphs'>Class 3</text>
+</g>
+</g>
+</svg>

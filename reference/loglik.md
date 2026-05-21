@@ -44,5 +44,4 @@ spec <- model_spec(
 )
 y <- rexp(100, rate = 2)
 loglik(spec, y, par = c(lambda = 2))
-#> [1] -34.74517
 ```

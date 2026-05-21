@@ -13,7 +13,8 @@ identifiability_check(
   par = NULL,
   level = c("local", "profile"),
   threshold = 0.01,
-  verbose = FALSE
+  verbose = FALSE,
+  cl = NULL
 )
 ```
 
@@ -44,6 +45,12 @@ identifiability_check(
 - verbose:
 
   Logical; print progress information
+
+- cl:
+
+  Optional parallel cluster from
+  [`setup_cluster()`](https://gcol33.github.io/degen/reference/setup_cluster.md).
+  If provided, profile likelihood computations run in parallel.
 
 ## Value
 
@@ -93,15 +100,6 @@ set.seed(123)
 y <- rnorm(100, mean = 5, sd = 2)
 result <- identifiability_check(norm_spec, y, par = c(mu = 5, sigma = 2))
 print(result)
-#> <identifiability_result>
-#> Overall: Model appears WELL-IDENTIFIED
-#> 
-#> Parameter status:
-#>   mu: identified
-#>   sigma: identified
-#> 
-#> Condition number: 1.7
-#> Rank: 2 / 2
 
 # Non-identifiable model
 nonid_spec <- model_spec(
@@ -113,19 +111,4 @@ nonid_spec <- model_spec(
 
 result2 <- identifiability_check(nonid_spec, y, par = c(a = 2, b = 3))
 print(result2)
-#> <identifiability_result>
-#> Overall: Model has NON-IDENTIFIABLE parameters
-#> 
-#> Parameter status:
-#>   a: NON-IDENTIFIABLE
-#>   b: NON-IDENTIFIABLE
-#> 
-#> Non-identified directions:
-#>   0.71*a -0.71*b
-#> 
-#> Identified functions:
-#>   -0.71*a -0.71*b
-#> 
-#> Condition number: 3e+12
-#> Rank: 1 / 2
 ```

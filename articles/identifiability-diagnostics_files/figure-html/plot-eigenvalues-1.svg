@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='504.00pt' height='311.50pt' viewBox='0 0 504.00 311.50'>
+<g class='svglite'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+    .svglite g.glyphgroup path {
+      fill: inherit;
+      stroke: none;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #F5F6F8;'/>
+<defs>
+  <clipPath id='cpMC4wMHw1MDQuMDB8MC4wMHwzMTEuNTA='>
+    <rect x='0.00' y='0.00' width='504.00' height='311.50' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw1MDQuMDB8MC4wMHwzMTEuNTA=)'>
+<rect x='74.40' y='59.04' width='174.55' height='177.24' style='stroke-width: 0.75; stroke: none; fill: #4682B4;' />
+<rect x='283.85' y='236.28' width='174.55' height='0.000000000057' style='stroke-width: 0.75; stroke: none; fill: #B22222;' />
+<text x='161.67' y='263.98' text-anchor='middle' style='font-size: 12.00px; font-family: "Liberation Sans";' textLength='29.36px' lengthAdjust='spacingAndGlyphs'>eig_1</text>
+<text x='371.13' y='263.98' text-anchor='middle' style='font-size: 12.00px; font-family: "Liberation Sans";' textLength='29.36px' lengthAdjust='spacingAndGlyphs'>eig_2</text>
+<text x='266.40' y='34.47' text-anchor='middle' style='font-size: 14.40px; font-weight: bold; font-family: "Liberation Sans";' textLength='146.36px' lengthAdjust='spacingAndGlyphs'>Eigenvalue Spectrum</text>
+<text transform='translate(12.96,148.55) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: "Liberation Sans";' textLength='59.38px' lengthAdjust='spacingAndGlyphs'>Eigenvalue</text>
+<line x1='59.04' y1='236.28' x2='59.04' y2='59.04' style='stroke-width: 0.75;' />
+<line x1='59.04' y1='236.28' x2='51.84' y2='236.28' style='stroke-width: 0.75;' />
+<line x1='59.04' y1='191.97' x2='51.84' y2='191.97' style='stroke-width: 0.75;' />
+<line x1='59.04' y1='147.66' x2='51.84' y2='147.66' style='stroke-width: 0.75;' />
+<line x1='59.04' y1='103.35' x2='51.84' y2='103.35' style='stroke-width: 0.75;' />
+<line x1='59.04' y1='59.04' x2='51.84' y2='59.04' style='stroke-width: 0.75;' />
+<text transform='translate(41.76,236.28) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: "Liberation Sans";' textLength='6.67px' lengthAdjust='spacingAndGlyphs'>0</text>
+<text transform='translate(41.76,191.97) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: "Liberation Sans";' textLength='13.34px' lengthAdjust='spacingAndGlyphs'>50</text>
+<text transform='translate(41.76,147.66) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: "Liberation Sans";' textLength='20.02px' lengthAdjust='spacingAndGlyphs'>100</text>
+<text transform='translate(41.76,103.35) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: "Liberation Sans";' textLength='20.02px' lengthAdjust='spacingAndGlyphs'>150</text>
+<text transform='translate(41.76,59.04) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: "Liberation Sans";' textLength='20.02px' lengthAdjust='spacingAndGlyphs'>200</text>
+</g>
+<defs>
+  <clipPath id='cpNTkuMDR8NDczLjc2fDU5LjA0fDIzOC4wNg=='>
+    <rect x='59.04' y='59.04' width='414.72' height='179.02' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpNTkuMDR8NDczLjc2fDU5LjA0fDIzOC4wNg==)'>
+<line x1='59.04' y1='236.28' x2='473.76' y2='236.28' style='stroke-width: 0.75; stroke: #7F7F7F; stroke-dasharray: 4.00,4.00;' />
+</g>
+<g clip-path='url(#cpMC4wMHw1MDQuMDB8MC4wMHwzMTEuNTA=)'>
+<text x='266.40' y='51.84' text-anchor='middle' style='font-size: 9.60px; font-family: "Liberation Sans";' textLength='129.62px' lengthAdjust='spacingAndGlyphs'>Condition: 3.1e+12 | Rank: 1/2</text>
+</g>
+</g>
+</svg>

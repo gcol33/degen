@@ -71,7 +71,4 @@ gamma_spec <- model_spec(
 
 pair <- equivalence_pair(exp_spec, gamma_spec)
 print(pair)
-#> <equivalence_pair> Exponential vs Gamma(1) 
-#> Model A: Exponential (1 parameter)
-#> Model B: Gamma(1) (1 parameter)
 ```

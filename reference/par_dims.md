@@ -31,6 +31,4 @@ norm_spec <- model_spec(
 )
 pair <- equivalence_pair(exp_spec, norm_spec)
 par_dims(pair)  # c(a = 1, b = 2)
-#> a b 
-#> 1 2 
 ```

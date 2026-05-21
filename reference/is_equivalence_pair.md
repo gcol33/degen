@@ -27,9 +27,6 @@ exp_spec <- model_spec(
 )
 pair <- equivalence_pair(exp_spec, exp_spec)
 is_equivalence_pair(pair)  # TRUE
-#> [1] TRUE
 is_equivalence_pair(list())
-#> [1] FALSE
 is_equivalence_pair(list())  # FALSE
-#> [1] FALSE
 ```

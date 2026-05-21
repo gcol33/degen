@@ -39,7 +39,4 @@ set.seed(123)
 y <- rnorm(100, mean = 5, sd = 1)
 info <- fisher_information(spec, y, par = c(a = 2, b = 3))
 null_directions(info)
-#>       null_1
-#> a -0.7071068
-#> b  0.7071068
 ```
