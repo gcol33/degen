@@ -10,7 +10,7 @@ Description: Tools for detecting whether statistical model specifications
     and characterizing equivalence classes among competing formulations.
 Language: en-US
 License: MIT + file LICENSE
-URL: https://github.com/gcol33/degen
+URL: https://github.com/gcol33/degen, https://gcol33.github.io/degen
 BugReports: https://github.com/gcol33/degen/issues
 Depends:
     R (>= 4.1.0)
@@ -28,6 +28,7 @@ Suggests:
     rmarkdown,
     rstan,
     rstanarm,
+    svglite,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
