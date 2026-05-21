@@ -35,7 +35,13 @@ jobs:
           needs: website
 
       - name: Build site
-        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
+        # `examples = FALSE` matches the local build pattern (see
+        # ~/.R/build_pkgdown.R) and avoids the pkgdown 2.2.0 +
+        # svglite 2.2.x interaction where pkgdown:::fig_save() sets
+        # `dev.args$bg <- NA` and svglite rejects NA bg with
+        # "Expected string vector of length 1". See
+        # dev_notes/repro_pkgdown_svglite_bug.R for a minimal repro.
+        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE, examples = FALSE)
         shell: Rscript {0}
 
       - name: Deploy to GitHub pages
