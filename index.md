@@ -1,6 +1,6 @@
 # degen
 
-*two models, one likelihood, nobody can tell them apart*
+*two models the data can’t tell apart*
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
