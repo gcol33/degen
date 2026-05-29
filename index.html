@@ -73,204 +73,125 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="degen">degen<a class="anchor" aria-label="anchor" href="#degen"></a>
 </h1></div>
+<p><em>two models, one likelihood, nobody can tell them apart</em></p>
 <p><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/gcol33/degen" class="external-link"><img src="https://codecov.io/gh/gcol33/degen/graph/badge.svg" alt="Codecov test coverage"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
-<p><strong>Detect Observational Equivalence and Non-Identifiability in Parametric Models</strong></p>
-<p>The <code>degen</code> package tests whether competing model specifications produce identical likelihood surfaces, diagnoses identifiability problems within a single model, and groups models into equivalence classes. Define models as log-likelihood functions, and <code>degen</code> tells you which ones the data can actually distinguish.</p>
-<div class="section level2">
-<h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
-</h2>
+<p><strong>Detection of observational equivalence and non-identifiability in parametric models, from their log-likelihood surfaces.</strong></p>
+<p>Hand it your model specifications. <code>degen</code> tells you which ones the data can actually distinguish: it compares likelihood surfaces to find observationally equivalent models, reads the Fisher information eigenspectrum to find parameters the likelihood is flat in, and groups models into equivalence classes by union-find. Two parameterizations that collapse to the same distribution will fit equally well forever, and the usual diagnostics will not say so.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gcol33/degen" class="external-link">degen</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Define two models</span></span>
-<span><span class="va">spec_exp</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec_exponential.html">model_spec_exponential</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">spec_gam</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>parameterization <span class="op">=</span> <span class="st">"shape_rate"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Test if they produce the same likelihood surface</span></span>
-<span><span class="va">pair</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/equivalence_pair.html">equivalence_pair</a></span><span class="op">(</span><span class="va">spec_exp</span>, <span class="va">spec_gam</span><span class="op">)</span></span>
+<span><span class="co"># are these two models telling the data apart, or just telling stories?</span></span>
+<span><span class="va">pair</span>   <span class="op">&lt;-</span> <span class="fu"><a href="reference/equivalence_pair.html">equivalence_pair</a></span><span class="op">(</span><span class="fu"><a href="reference/model_spec_exponential.html">model_spec_exponential</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                           <span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>parameterization <span class="op">=</span> <span class="st">"shape_rate"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compare_surfaces.html">compare_surfaces</a></span><span class="op">(</span><span class="va">pair</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">200</span>, rate <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
+<span><span class="va">result</span></span>
 <span></span>
-<span><span class="co"># Check identifiability of a single model</span></span>
-<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fisher_information.html">fisher_information</a></span><span class="op">(</span><span class="va">spec_gam</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/GammaDist.html" class="external-link">rgamma</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>,</span>
-<span>                           par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">2</span>, rate <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># is a single model's likelihood flat in some direction?</span></span>
+<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fisher_information.html">fisher_information</a></span><span class="op">(</span><span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>parameterization <span class="op">=</span> <span class="st">"shape_rate"</span><span class="op">)</span>,</span>
+<span>                           y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/GammaDist.html" class="external-link">rgamma</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">2</span>, rate <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/identifiability_check.html">identifiability_check</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="the-question-convergence-checks-skip">The question convergence checks skip<a class="anchor" aria-label="anchor" href="#the-question-convergence-checks-skip"></a>
+</h2>
+<p>Standard diagnostics ask whether a fit converged, predicts, and leaves clean residuals. None of them ask whether the model structure was distinguishable from its alternatives in the first place. When two specifications encode the same distribution over observable data, no amount of data separates them; when a parameter sits in a flat direction of the likelihood, it is unestimable. Both show up downstream as convergence failures, ridge-like surfaces, or answers that flip between software packages, and diagnosing them by hand means comparing likelihood functions term by term.</p>
+<p><code>degen</code> does that comparison for you, and it can do it two ways: numerically, by searching the likelihood surfaces for a separating point, and symbolically, by checking exact parameter equivalence and detecting linear reparameterizations. The numerical verdict is evidence (no counterexample found in the searched region); the symbolic verdict is a proof of equivalence when it succeeds.</p>
 </div>
 <div class="section level2">
-<h2 id="statement-of-need">Statement of Need<a class="anchor" aria-label="anchor" href="#statement-of-need"></a>
+<h2 id="what-it-works-on">What it works on<a class="anchor" aria-label="anchor" href="#what-it-works-on"></a>
 </h2>
-<p>Different parameterizations of a statistical model can produce the same distribution over observable data. When this happens, no amount of data will distinguish between them. Similarly, parameters may be locally non-identifiable: the likelihood is flat in some direction, making those parameters unestimable.</p>
-<p>These problems surface as convergence failures, ridge-like likelihood surfaces, or contradictory results across software packages. Diagnosing them usually requires manual comparison of likelihood functions.</p>
-<p><code>degen</code> automates this with systematic comparison of likelihood surfaces, Fisher information diagnostics, profile likelihood analysis, and equivalence class detection. It is relevant wherever model structure matters: mixture models with label switching, mechanistic ecological models with competing functional forms, or hierarchical models where variance components trade off.</p>
+<ul>
+<li>
+<strong><code><a href="reference/model_spec.html">model_spec()</a></code></strong>: define a model from any log-likelihood function, with named parameters and bounds. Ten built-ins are ready (<code><a href="reference/model_spec_normal.html">model_spec_normal()</a></code>, <code><a href="reference/model_spec_gamma.html">model_spec_gamma()</a></code>, <code><a href="reference/model_spec_poisson.html">model_spec_poisson()</a></code>, <code><a href="reference/model_spec_weibull.html">model_spec_weibull()</a></code>, and the rest), and <code><a href="reference/model_spec_from_fit.html">model_spec_from_fit()</a></code> pulls a spec straight out of a fitted <code>lm</code> or <code>glm</code>.</li>
+<li>
+<strong><code><a href="reference/compare_surfaces.html">compare_surfaces()</a></code> / <code><a href="reference/equivalence_pair.html">equivalence_pair()</a></code></strong>: test two models for observational equivalence, by grid search or optimization, in both directions.</li>
+<li>
+<strong><code><a href="reference/check_exact_equivalence.html">check_exact_equivalence()</a></code> / <code><a href="reference/detect_linear_reparam.html">detect_linear_reparam()</a></code></strong>: the symbolic path, for when you want a proof rather than evidence.</li>
+<li>
+<strong><code><a href="reference/equivalence_classes.html">equivalence_classes()</a></code> / <code><a href="reference/compare_all_pairs.html">compare_all_pairs()</a></code></strong>: group a list of models into empirical equivalence classes (union-find), or build the full pairwise comparison matrix.</li>
+<li>
+<strong><code><a href="reference/fisher_information.html">fisher_information()</a></code> / <code><a href="reference/identifiability_check.html">identifiability_check()</a></code> / <code><a href="reference/null_directions.html">null_directions()</a></code></strong>: observed or expected information, eigenvalue decomposition, and the parameter combinations the data cannot pin down.</li>
+<li>
+<strong><code><a href="reference/profile_likelihood.html">profile_likelihood()</a></code> / <code><a href="reference/profile_ci.html">profile_ci()</a></code></strong>: profile curves and the confidence intervals read off them.</li>
+<li>
+<strong><code><a href="reference/diagnose_model.html">diagnose_model()</a></code></strong>: the single-call report covering all of the above.</li>
+</ul>
 </div>
 <div class="section level2">
-<h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
+<h2 id="numerical-or-symbolic">Numerical or symbolic?<a class="anchor" aria-label="anchor" href="#numerical-or-symbolic"></a>
 </h2>
-<div class="section level3">
-<h3 id="model-specification">Model Specification<a class="anchor" aria-label="anchor" href="#model-specification"></a>
-</h3>
-<ul>
-<li>
-<strong><code><a href="reference/model_spec.html">model_spec()</a></code></strong>: Define a model from any log-likelihood function</li>
-<li>
-<strong>Built-in distributions</strong>: <code><a href="reference/model_spec_normal.html">model_spec_normal()</a></code>, <code><a href="reference/model_spec_exponential.html">model_spec_exponential()</a></code>, <code><a href="reference/model_spec_gamma.html">model_spec_gamma()</a></code>, <code><a href="reference/model_spec_poisson.html">model_spec_poisson()</a></code>, <code><a href="reference/model_spec_binomial.html">model_spec_binomial()</a></code>, <code><a href="reference/model_spec_beta.html">model_spec_beta()</a></code>, <code><a href="reference/model_spec_lognormal.html">model_spec_lognormal()</a></code>, <code><a href="reference/model_spec_weibull.html">model_spec_weibull()</a></code>, <code><a href="reference/model_spec_negbinom.html">model_spec_negbinom()</a></code>, <code><a href="reference/model_spec_uniform.html">model_spec_uniform()</a></code>
-</li>
-<li>
-<strong><code><a href="reference/model_spec_from_fit.html">model_spec_from_fit()</a></code></strong>: Extract specifications from fitted <code>lm</code> or <code>glm</code> objects</li>
-<li>
-<strong><code><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate()</a></code></strong>: Generate data from any model specification</li>
-</ul>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th></th>
+<th><code><a href="reference/compare_surfaces.html">compare_surfaces()</a></code></th>
+<th><code><a href="reference/check_exact_equivalence.html">check_exact_equivalence()</a></code></th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Needs data?</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Returns</td>
+<td>Evidence (no counterexample in searched region)</td>
+<td>Proof of equivalence when it succeeds</td>
+</tr>
+<tr>
+<td>Handles arbitrary log-likelihoods?</td>
+<td>Yes</td>
+<td>Within the supported algebra</td>
+</tr>
+<tr>
+<td>Best for</td>
+<td>Any pair of specifications</td>
+<td>Suspected exact reparameterizations</td>
+</tr>
+</tbody>
+</table>
+<p>Run <code><a href="reference/compare_surfaces.html">compare_surfaces()</a></code> to see whether the data can tell two models apart; reach for the symbolic path when you suspect they are exactly the same model wearing different parameters.</p>
 </div>
-<div class="section level3">
-<h3 id="equivalence-testing">Equivalence Testing<a class="anchor" aria-label="anchor" href="#equivalence-testing"></a>
-</h3>
-<ul>
-<li>
-<strong><code><a href="reference/compare_surfaces.html">compare_surfaces()</a></code></strong>: Compare likelihood surfaces between two models (grid or optimization)</li>
-<li>
-<strong><code><a href="reference/equivalence_pair.html">equivalence_pair()</a></code></strong>: Create comparison objects with automatic parameter mapping</li>
-<li>
-<strong><code><a href="reference/compare_all_pairs.html">compare_all_pairs()</a></code></strong>: Pairwise comparison across a list of models</li>
-<li>
-<strong><code><a href="reference/equivalence_classes.html">equivalence_classes()</a></code></strong>: Group models into empirical equivalence classes</li>
-<li>
-<strong><code><a href="reference/detect_linear_reparam.html">detect_linear_reparam()</a></code></strong>: Detect linear reparameterizations between models</li>
-<li>
-<strong><code><a href="reference/check_exact_equivalence.html">check_exact_equivalence()</a></code></strong>: Symbolic equivalence checking</li>
-</ul>
+<div class="section level2">
+<h2 id="custom-log-likelihoods">Custom log-likelihoods<a class="anchor" aria-label="anchor" href="#custom-log-likelihoods"></a>
+</h2>
+<p>Any function that maps data and named parameters to a scalar log-likelihood is a model:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># a model degen has never seen, defined in three lines</span></span>
+<span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec.html">model_spec</a></span><span class="op">(</span></span>
+<span>  loglik_fn  <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">mu</span>, <span class="va">sigma</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">mu</span>, <span class="va">sigma</span>, log <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  par_names  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu"</span>, <span class="st">"sigma"</span><span class="op">)</span>,</span>
+<span>  par_bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1e-6</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fisher_information.html">fisher_information</a></span><span class="op">(</span><span class="va">spec</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mu <span class="op">=</span> <span class="fl">1</span>, sigma <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/identifiability_check.html">identifiability_check</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span></code></pre></div>
+<p>This is the case <code>degen</code> is built for: mixture models with label switching, mechanistic models with competing functional forms, hierarchical models whose variance components trade off. Wherever model structure carries meaning, it tells you how much of that structure the data actually support.</p>
 </div>
-<div class="section level3">
-<h3 id="identifiability-diagnostics">Identifiability Diagnostics<a class="anchor" aria-label="anchor" href="#identifiability-diagnostics"></a>
-</h3>
-<ul>
-<li>
-<strong><code><a href="reference/fisher_information.html">fisher_information()</a></code></strong>: Observed or expected Fisher information matrix</li>
-<li>
-<strong><code><a href="reference/identifiability_check.html">identifiability_check()</a></code></strong>: Comprehensive analysis with eigenvalue decomposition</li>
-<li>
-<strong><code><a href="reference/null_directions.html">null_directions()</a></code></strong>: Find directions of non-identifiability in parameter space</li>
-<li>
-<strong><code><a href="reference/profile_likelihood.html">profile_likelihood()</a></code></strong>: Compute and plot profile likelihoods</li>
-<li>
-<strong><code><a href="reference/profile_ci.html">profile_ci()</a></code></strong>: Confidence intervals from profile curves</li>
-<li>
-<strong><code><a href="reference/diagnose_model.html">diagnose_model()</a></code></strong>: All-in-one diagnostic report</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="robustness--sensitivity">Robustness &amp; Sensitivity<a class="anchor" aria-label="anchor" href="#robustness--sensitivity"></a>
-</h3>
-<ul>
-<li>
-<strong><code><a href="reference/sensitivity_analysis.html">sensitivity_analysis()</a></code></strong>: Test robustness of equivalence to tolerance and grid settings</li>
-<li>
-<strong><code><a href="reference/bootstrap_equivalence.html">bootstrap_equivalence()</a></code></strong>: Bootstrap resampling test</li>
-<li>
-<strong><code><a href="reference/cross_validate_equivalence.html">cross_validate_equivalence()</a></code></strong>: Cross-validation test</li>
-<li>
-<strong><code><a href="reference/prior_sensitivity.html">prior_sensitivity()</a></code></strong>: Bayesian prior sensitivity analysis</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="bayesian-integration">Bayesian Integration<a class="anchor" aria-label="anchor" href="#bayesian-integration"></a>
-</h3>
-<ul>
-<li>
-<strong><code><a href="reference/compare_posteriors.html">compare_posteriors()</a></code></strong>: Compare posteriors from MCMC samples (brms, Stan, rstanarm)</li>
-<li>
-<strong><code><a href="reference/extract_samples.html">extract_samples()</a></code></strong>: Extract posterior samples from fitted Bayesian models</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="export">Export<a class="anchor" aria-label="anchor" href="#export"></a>
-</h3>
-<ul>
-<li>
-<strong><code><a href="reference/export_results.html">export_results()</a></code></strong>: Export to JSON, CSV, or markdown</li>
-<li>
-<strong><code><a href="reference/to_latex.html">to_latex()</a></code></strong>: LaTeX output for papers</li>
-</ul>
-</div>
+<div class="section level2">
+<h2 id="robustness-and-bayesian-models">Robustness and Bayesian models<a class="anchor" aria-label="anchor" href="#robustness-and-bayesian-models"></a>
+</h2>
+<p>An equivalence verdict should not hinge on a tolerance setting. <code><a href="reference/sensitivity_analysis.html">sensitivity_analysis()</a></code> sweeps tolerances and grid sizes, <code><a href="reference/bootstrap_equivalence.html">bootstrap_equivalence()</a></code> and <code><a href="reference/cross_validate_equivalence.html">cross_validate_equivalence()</a></code> resample the test, and <code><a href="reference/prior_sensitivity.html">prior_sensitivity()</a></code> checks how far a prior is doing the identifying. For fitted Bayesian models, <code><a href="reference/compare_posteriors.html">compare_posteriors()</a></code> and <code><a href="reference/extract_samples.html">extract_samples()</a></code> work on MCMC draws from <code>brms</code>, <code>rstan</code>, and <code>rstanarm</code>. Results export through <code><a href="reference/export_results.html">export_results()</a></code> (JSON, CSV, markdown) and <code><a href="reference/to_latex.html">to_latex()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span></span>
-<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"gcol33/degen"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="usage-examples">Usage Examples<a class="anchor" aria-label="anchor" href="#usage-examples"></a>
-</h2>
-<div class="section level3">
-<h3 id="comparing-two-model-specifications">Comparing Two Model Specifications<a class="anchor" aria-label="anchor" href="#comparing-two-model-specifications"></a>
-</h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gcol33/degen" class="external-link">degen</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Exponential vs Gamma(shape=1): are they distinguishable?</span></span>
-<span><span class="va">spec_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec_exponential.html">model_spec_exponential</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">spec_b</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>parameterization <span class="op">=</span> <span class="st">"shape_rate"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">pair</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/equivalence_pair.html">equivalence_pair</a></span><span class="op">(</span><span class="va">spec_a</span>, <span class="va">spec_b</span><span class="op">)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compare_surfaces.html">compare_surfaces</a></span><span class="op">(</span><span class="va">pair</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">200</span>, rate <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">result</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="identifiability-diagnostics-1">Identifiability Diagnostics<a class="anchor" aria-label="anchor" href="#identifiability-diagnostics-1"></a>
-</h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Check a two-parameter model</span></span>
-<span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>parameterization <span class="op">=</span> <span class="st">"shape_rate"</span><span class="op">)</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/GammaDist.html" class="external-link">rgamma</a></span><span class="op">(</span><span class="fl">500</span>, shape <span class="op">=</span> <span class="fl">2</span>, rate <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fisher_information.html">fisher_information</a></span><span class="op">(</span><span class="va">spec</span>, y <span class="op">=</span> <span class="va">y</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">2</span>, rate <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">id_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/identifiability_check.html">identifiability_check</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">id_check</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Profile likelihood for individual parameters</span></span>
-<span><span class="va">prof</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/profile_likelihood.html">profile_likelihood</a></span><span class="op">(</span><span class="va">spec</span>, y <span class="op">=</span> <span class="va">y</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">2</span>, rate <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
-<span>                           which <span class="op">=</span> <span class="st">"shape"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">prof</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="equivalence-classes">Equivalence Classes<a class="anchor" aria-label="anchor" href="#equivalence-classes"></a>
-</h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Group multiple models by equivalence</span></span>
-<span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  exp       <span class="op">=</span> <span class="fu"><a href="reference/model_spec_exponential.html">model_spec_exponential</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  gamma_sr  <span class="op">=</span> <span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>parameterization <span class="op">=</span> <span class="st">"shape_rate"</span><span class="op">)</span>,</span>
-<span>  gamma_ss  <span class="op">=</span> <span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>parameterization <span class="op">=</span> <span class="st">"shape_scale"</span><span class="op">)</span>,</span>
-<span>  weibull   <span class="op">=</span> <span class="fu"><a href="reference/model_spec_weibull.html">model_spec_weibull</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">classes</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/equivalence_classes.html">equivalence_classes</a></span><span class="op">(</span><span class="va">models</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">200</span>, rate <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">classes</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="sensitivity-analysis">Sensitivity Analysis<a class="anchor" aria-label="anchor" href="#sensitivity-analysis"></a>
-</h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sens</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sensitivity_analysis.html">sensitivity_analysis</a></span><span class="op">(</span><span class="va">pair</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">200</span>, rate <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>                             tolerances <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1e-4</span>, <span class="fl">1e-6</span>, <span class="fl">1e-8</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sens</span><span class="op">)</span></span></code></pre></div>
-</div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span>                   <span class="co"># development version</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"gcol33/degen"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
 <ul>
-<li>
-<a href="https://gcol33.github.io/degen/articles/introduction.html">Introduction</a> - Package overview and core concepts</li>
-<li>
-<a href="https://gcol33.github.io/degen/articles/model-specification.html">Model Specification</a> - Defining models</li>
-<li>
-<a href="https://gcol33.github.io/degen/articles/comparing-models.html">Comparing Models</a> - Equivalence testing</li>
-<li>
-<a href="https://gcol33.github.io/degen/articles/identifiability-diagnostics.html">Identifiability Diagnostics</a> - Fisher information and profile likelihoods</li>
-<li>
-<a href="https://gcol33.github.io/degen/articles/case-studies.html">Case Studies</a> - Practical applications</li>
+<li><a href="https://gcol33.github.io/degen/articles/introduction.html">Introduction</a></li>
+<li><a href="https://gcol33.github.io/degen/articles/model-specification.html">Model Specification</a></li>
+<li><a href="https://gcol33.github.io/degen/articles/comparing-models.html">Comparing Models</a></li>
+<li><a href="https://gcol33.github.io/degen/articles/identifiability-diagnostics.html">Identifiability Diagnostics</a></li>
+<li><a href="https://gcol33.github.io/degen/articles/case-studies.html">Case Studies</a></li>
 <li><a href="https://gcol33.github.io/degen/reference/">Function Reference</a></li>
 </ul>
 </div>
@@ -292,12 +213,12 @@
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co">@software{degen,</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">  author = {Colling, Gilles},</span></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">  title = {degen: Detect Observational Equivalence and Non-Identifiability in Parametric Models},</span></span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">  year = {2025},</span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">  url = {https://github.com/gcol33/degen}</span></span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co">@software{degen,</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">  author = {Colling, Gilles},</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">  title = {degen: Detect Observational Equivalence and Non-Identifiability in Parametric Models},</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">  year = {2025},</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">  url = {https://github.com/gcol33/degen}</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
