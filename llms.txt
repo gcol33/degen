@@ -1,5 +1,7 @@
 # degen
 
+> Small exact engines for scientific computing in R.
+
 *two models the data can’t tell apart*
 
 [![Lifecycle:
