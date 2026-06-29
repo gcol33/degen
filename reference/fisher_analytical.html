@@ -3,20 +3,20 @@
 known closed-form expressions. Falls back to numerical computation for
 unknown distributions."><meta property="og:description" content="For standard distributions, compute the Fisher information matrix using
 known closed-form expressions. Falls back to numerical computation for
-unknown distributions."></head><body><p>
-
-
-
-
-
-
-
-
-  pkgdown/mathjax-config.html
-
-  
-
-  </p>
+unknown distributions."><script>
+(function () {
+  var D = String.fromCharCode(36);
+  window.MathJax = {
+    tex: {
+      inlineMath: [[D, D], ["\\(", "\\)"]],
+      displayMath: [[D + D, D + D], ["\\[", "\\]"]]
+    },
+    chtml: { linebreaks: { automatic: true, width: "90% container" } },
+    svg: { linebreaks: { automatic: true, width: "90% container" } },
+    options: { renderActions: { addMenu: [] } }
+  };
+})();
+</script></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -120,6 +120,5 @@ from spec$name. Supported: "normal", "exponential", "poisson", "gamma",
 
 
 
-  
-</body></html>
+  </body></html>
 
