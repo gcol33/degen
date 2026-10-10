@@ -16,6 +16,15 @@ and groups models into equivalence classes by union-find. Two parameterizations 
 collapse to the same distribution will fit equally well forever, and the usual diagnostics
 will not say so.
 
+## Installation
+
+```r
+install.packages("pak")                   # development version
+pak::pak("gcol33/degen")
+```
+
+## Quick start
+
 ```r
 library(degen)
 
@@ -107,13 +116,6 @@ resample the test, and `prior_sensitivity()` checks how far a prior is doing the
 identifying. For fitted Bayesian models, `compare_posteriors()` and `extract_samples()` work
 on MCMC draws from `brms`, `rstan`, and `rstanarm`. Results export through `export_results()`
 (JSON, CSV, markdown) and `to_latex()`.
-
-## Installation
-
-```r
-install.packages("pak")                   # development version
-pak::pak("gcol33/degen")
-```
 
 ## Documentation
 

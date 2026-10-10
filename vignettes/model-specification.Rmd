@@ -19,6 +19,13 @@ knitr::opts_chunk$set(
 library(degen)
 ```
 
+## Installation
+
+```{r, eval = FALSE}
+install.packages("pak")                   # development version
+pak::pak("gcol33/degen")
+```
+
 ## The model_spec object
 
 The `model_spec` is the fundamental building block in degen. It encapsulates a statistical model through its log-likelihood function, allowing the package to perform equivalence testing and identifiability analysis.

@@ -19,6 +19,13 @@ knitr::opts_chunk$set(
 library(degen)
 ```
 
+## Installation
+
+```{r, eval = FALSE}
+install.packages("pak")                   # development version
+pak::pak("gcol33/degen")
+```
+
 ## What is identifiability?
 
 A parameter is **identifiable** if its value can be uniquely determined from the data. When parameters are non-identifiable, the likelihood function is flat in some direction, meaning infinitely many parameter values produce the same likelihood.

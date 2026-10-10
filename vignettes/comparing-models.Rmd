@@ -19,6 +19,13 @@ knitr::opts_chunk$set(
 library(degen)
 ```
 
+## Installation
+
+```{r, eval = FALSE}
+install.packages("pak")                   # development version
+pak::pak("gcol33/degen")
+```
+
 ## Overview
 
 This vignette covers workflows for comparing statistical models to determine whether they are observationally equivalent. Two models are equivalent if they can produce exactly the same likelihood for any dataset.

@@ -21,6 +21,13 @@ library(degen)
 
 This vignette presents real-world examples of equivalence testing and identifiability analysis using the degen package.
 
+## Installation
+
+```{r, eval = FALSE}
+install.packages("pak")                   # development version
+pak::pak("gcol33/degen")
+```
+
 ## Case Study 1: Competing Ecological Models
 
 Population ecologists often fit multiple models to count data, each representing different biological hypotheses about growth dynamics. A key question is whether these models are distinguishable given the data.
