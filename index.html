@@ -77,7 +77,17 @@
 <p><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/gcol33/degen" class="external-link"><img src="https://codecov.io/gh/gcol33/degen/graph/badge.svg" alt="Codecov test coverage"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
 <p><strong>Detection of observational equivalence and non-identifiability in parametric models, from their log-likelihood surfaces.</strong></p>
 <p>Hand it your model specifications. <code>degen</code> tells you which ones the data can actually distinguish: it compares likelihood surfaces to find observationally equivalent models, reads the Fisher information eigenspectrum to find parameters the likelihood is flat in, and groups models into equivalence classes by union-find. Two parameterizations that collapse to the same distribution will fit equally well forever, and the usual diagnostics will not say so.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span>                   <span class="co"># development version</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"gcol33/degen"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+</h2>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gcol33/degen" class="external-link">degen</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># are these two models telling the data apart, or just telling stories?</span></span>
@@ -90,6 +100,7 @@
 <span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fisher_information.html">fisher_information</a></span><span class="op">(</span><span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>parameterization <span class="op">=</span> <span class="st">"shape_rate"</span><span class="op">)</span>,</span>
 <span>                           y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/GammaDist.html" class="external-link">rgamma</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">2</span>, rate <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/identifiability_check.html">identifiability_check</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level2">
 <h2 id="the-question-convergence-checks-skip">The question convergence checks skip<a class="anchor" aria-label="anchor" href="#the-question-convergence-checks-skip"></a>
 </h2>
@@ -159,7 +170,7 @@
 <h2 id="custom-log-likelihoods">Custom log-likelihoods<a class="anchor" aria-label="anchor" href="#custom-log-likelihoods"></a>
 </h2>
 <p>Any function that maps data and named parameters to a scalar log-likelihood is a model:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># a model degen has never seen, defined in three lines</span></span>
 <span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec.html">model_spec</a></span><span class="op">(</span></span>
 <span>  loglik_fn  <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">mu</span>, <span class="va">sigma</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">mu</span>, <span class="va">sigma</span>, log <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -175,13 +186,6 @@
 <h2 id="robustness-and-bayesian-models">Robustness and Bayesian models<a class="anchor" aria-label="anchor" href="#robustness-and-bayesian-models"></a>
 </h2>
 <p>An equivalence verdict should not hinge on a tolerance setting. <code><a href="reference/sensitivity_analysis.html">sensitivity_analysis()</a></code> sweeps tolerances and grid sizes, <code><a href="reference/bootstrap_equivalence.html">bootstrap_equivalence()</a></code> and <code><a href="reference/cross_validate_equivalence.html">cross_validate_equivalence()</a></code> resample the test, and <code><a href="reference/prior_sensitivity.html">prior_sensitivity()</a></code> checks how far a prior is doing the identifying. For fitted Bayesian models, <code><a href="reference/compare_posteriors.html">compare_posteriors()</a></code> and <code><a href="reference/extract_samples.html">extract_samples()</a></code> work on MCMC draws from <code>brms</code>, <code>rstan</code>, and <code>rstanarm</code>. Results export through <code><a href="reference/export_results.html">export_results()</a></code> (JSON, CSV, markdown) and <code><a href="reference/to_latex.html">to_latex()</a></code>.</p>
-</div>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span>                   <span class="co"># development version</span></span>
-<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"gcol33/degen"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
@@ -263,7 +267,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

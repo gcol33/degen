@@ -21,6 +21,16 @@ models into equivalence classes by union-find. Two parameterizations
 that collapse to the same distribution will fit equally well forever,
 and the usual diagnostics will not say so.
 
+## Installation
+
+``` r
+
+install.packages("pak")                   # development version
+pak::pak("gcol33/degen")
+```
+
+## Quick start
+
 ``` r
 
 library(degen)
@@ -155,14 +165,6 @@ through
 [`export_results()`](https://gcol33.github.io/degen/reference/export_results.md)
 (JSON, CSV, markdown) and
 [`to_latex()`](https://gcol33.github.io/degen/reference/to_latex.md).
-
-## Installation
-
-``` r
-
-install.packages("pak")                   # development version
-pak::pak("gcol33/degen")
-```
 
 ## Documentation
 

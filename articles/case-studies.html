@@ -78,7 +78,7 @@
                         <h4 data-toc-skip class="author">Gilles
 Colling</h4>
             
-            <h4 data-toc-skip class="date">2026-06-29</h4>
+            <h4 data-toc-skip class="date">2026-10-10</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/gcol33/degen/blob/main/vignettes/case-studies.Rmd" class="external-link"><code>vignettes/case-studies.Rmd</code></a></small>
       <div class="d-none name"><code>case-studies.Rmd</code></div>
@@ -88,6 +88,13 @@ Colling</h4>
     
 <p>This vignette presents real-world examples of equivalence testing and
 identifiability analysis using the degen package.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span>                   <span class="co"># development version</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"gcol33/degen"</span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level2">
 <h2 id="case-study-1-competing-ecological-models">Case Study 1: Competing Ecological Models<a class="anchor" aria-label="anchor" href="#case-study-1-competing-ecological-models"></a>
 </h2>
@@ -107,13 +114,13 @@ capacity (symmetric S-curve)</p></li>
 <li><p><strong>Gompertz growth</strong>: Growth limited by carrying
 capacity (asymmetric S-curve)</p></li>
 </ol>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load the example dataset</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">ecological_models</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The data: 50 population counts over time</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">ecological_models</span><span class="op">$</span><span class="va">y</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">y</span>, type <span class="op">=</span> <span class="st">"b"</span>, xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"Population count"</span>,</span>
 <span>     main <span class="op">=</span> <span class="st">"Simulated population data"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-studies_files/figure-html/ecological-plot-data-1.svg" class="r-plt" alt="Line plot showing simulated population counts over 50 time points. The data shows an initial growth phase that levels off, suggesting density-dependent dynamics." width="672"></p>
@@ -121,7 +128,7 @@ capacity (asymmetric S-curve)</p></li>
 <div class="section level3">
 <h3 id="examining-the-models">Examining the models<a class="anchor" aria-label="anchor" href="#examining-the-models"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># The three competing models</span></span>
 <span><span class="va">models</span> <span class="op">&lt;-</span> <span class="va">ecological_models</span><span class="op">$</span><span class="va">models</span></span>
 <span></span>
@@ -149,7 +156,7 @@ capacity (asymmetric S-curve)</p></li>
 <h3 id="testing-equivalence">Testing equivalence<a class="anchor" aria-label="anchor" href="#testing-equivalence"></a>
 </h3>
 <p>Are any of these models observationally equivalent?</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find equivalence classes among the models</span></span>
 <span><span class="va">classes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/equivalence_classes.html">equivalence_classes</a></span><span class="op">(</span><span class="va">models</span>, <span class="va">y</span>, n_points <span class="op">=</span> <span class="fl">25</span>,</span>
 <span>                               tol <span class="op">=</span> <span class="fl">1e-4</span>, progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
@@ -164,7 +171,7 @@ capacity (asymmetric S-curve)</p></li>
 <div class="section level3">
 <h3 id="interpretation">Interpretation<a class="anchor" aria-label="anchor" href="#interpretation"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View the pairwise discrepancies</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Pairwise maximum discrepancies:\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Pairwise maximum discrepancies:</span></span>
@@ -193,7 +200,7 @@ their approach curves</p></li>
 <div class="section level3">
 <h3 id="visualizing-the-comparison">Visualizing the comparison<a class="anchor" aria-label="anchor" href="#visualizing-the-comparison"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">classes</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-studies_files/figure-html/ecological-plot-1.svg" class="r-plt" alt="Heatmap showing equivalence relationships between exponential, logistic, and Gompertz growth models. All three models form separate equivalence classes, indicating they are distinguishable given the data." width="672"></p>
 <hr>
@@ -208,13 +215,13 @@ parameterization with identical likelihood.</p>
 <div class="section level3">
 <h3 id="the-model">The model<a class="anchor" aria-label="anchor" href="#the-model"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load the mixture model example</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">mixture_model</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">mixture_model</span><span class="op">$</span><span class="va">y</span></span>
 <span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="va">mixture_model</span><span class="op">$</span><span class="va">spec</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View the data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">y</span>, breaks <span class="op">=</span> <span class="fl">30</span>, main <span class="op">=</span> <span class="st">"Mixture data"</span>, xlab <span class="op">=</span> <span class="st">"Value"</span>, col <span class="op">=</span> <span class="st">"lightblue"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-studies_files/figure-html/mixture-hist-1.svg" class="r-plt" alt="Histogram of mixture model data showing a bimodal distribution with two distinct peaks, characteristic of a two-component Gaussian mixture." width="672"></p>
@@ -223,7 +230,7 @@ parameterization with identical likelihood.</p>
 <h3 id="label-switching-equivalence">Label switching equivalence<a class="anchor" aria-label="anchor" href="#label-switching-equivalence"></a>
 </h3>
 <p>The true parameters and their label-swapped version:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">true_par</span> <span class="op">&lt;-</span> <span class="va">mixture_model</span><span class="op">$</span><span class="va">true_params</span></span>
 <span><span class="va">swapped_par</span> <span class="op">&lt;-</span> <span class="va">mixture_model</span><span class="op">$</span><span class="va">swapped_params</span></span>
 <span></span>
@@ -240,7 +247,7 @@ parameterization with identical likelihood.</p>
 <span><span class="co">#&gt;   mu1   mu2 sigma    pi </span></span>
 <span><span class="co">#&gt;   3.0   0.0   1.0   0.6</span></span></code></pre></div>
 <p>Both parameter sets produce the same likelihood:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ll_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loglik.html">loglik</a></span><span class="op">(</span><span class="va">spec</span>, <span class="va">y</span>, <span class="va">true_par</span><span class="op">)</span></span>
 <span><span class="va">ll_swapped</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loglik.html">loglik</a></span><span class="op">(</span><span class="va">spec</span>, <span class="va">y</span>, <span class="va">swapped_par</span><span class="op">)</span></span>
 <span></span>
@@ -254,7 +261,7 @@ parameterization with identical likelihood.</p>
 <div class="section level3">
 <h3 id="identifiability-analysis">Identifiability analysis<a class="anchor" aria-label="anchor" href="#identifiability-analysis"></a>
 </h3>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check identifiability at the true parameters</span></span>
 <span><span class="va">id_check</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/identifiability_check.html">identifiability_check</a></span><span class="op">(</span><span class="va">spec</span>, <span class="va">y</span>, par <span class="op">=</span> <span class="va">true_par</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">id_check</span><span class="op">)</span></span>
@@ -273,7 +280,7 @@ parameterization with identical likelihood.</p>
 <div class="section level3">
 <h3 id="fisher-information">Fisher information<a class="anchor" aria-label="anchor" href="#fisher-information"></a>
 </h3>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fisher_information.html">fisher_information</a></span><span class="op">(</span><span class="va">spec</span>, <span class="va">y</span>, par <span class="op">=</span> <span class="va">true_par</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;fisher_info&gt; (observed) at par = (mu1=0, mu2=3, sigma=1, pi=0.4)</span></span>
@@ -315,7 +322,7 @@ produce identical likelihoods for all possible data.</p>
 <div class="section level3">
 <h3 id="the-sum-model">The sum model<a class="anchor" aria-label="anchor" href="#the-sum-model"></a>
 </h3>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load the non-identifiable example</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">nonidentifiable_example</span><span class="op">)</span></span>
 <span></span>
@@ -341,7 +348,7 @@ appears in the likelihood. Any values of
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>b</mi><annotation encoding="application/x-tex">b</annotation></semantics></math>
 that sum to the same total are indistinguishable.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Different (a, b) pairs with the same sum</span></span>
 <span><span class="va">par1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">2</span>, b <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>   <span class="co"># sum = 5</span></span>
 <span><span class="va">par2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">0</span>, b <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>   <span class="co"># sum = 5</span></span>
@@ -362,7 +369,7 @@ that sum to the same total are indistinguishable.</p>
 <div class="section level3">
 <h3 id="fisher-information-analysis">Fisher information analysis<a class="anchor" aria-label="anchor" href="#fisher-information-analysis"></a>
 </h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fisher_information.html">fisher_information</a></span><span class="op">(</span><span class="va">spec</span>, <span class="va">y</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">2</span>, b <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;fisher_info&gt; (observed) at par = (a=2, b=3)</span></span>
@@ -377,7 +384,7 @@ that sum to the same total are indistinguishable.</p>
 <div class="section level3">
 <h3 id="finding-the-non-identifiable-direction">Finding the non-identifiable direction<a class="anchor" aria-label="anchor" href="#finding-the-non-identifiable-direction"></a>
 </h3>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">null_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/null_directions.html">null_directions</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Null direction(s):\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Null direction(s):</span></span>
@@ -398,7 +405,7 @@ down by the same amount leaves the likelihood unchanged.</p>
 <div class="section level3">
 <h3 id="identifiability-check">Identifiability check<a class="anchor" aria-label="anchor" href="#identifiability-check"></a>
 </h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">id_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/identifiability_check.html">identifiability_check</a></span><span class="op">(</span><span class="va">spec</span>, <span class="va">y</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">2</span>, b <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">id_result</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;identifiability_result&gt;</span></span>
@@ -421,7 +428,7 @@ down by the same amount leaves the likelihood unchanged.</p>
 <h3 id="resolution-reparameterization">Resolution: Reparameterization<a class="anchor" aria-label="anchor" href="#resolution-reparameterization"></a>
 </h3>
 <p>The solution is to estimate what <em>is</em> identifiable:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Reparameterized model: estimate the sum directly</span></span>
 <span><span class="va">reparam_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_spec.html">model_spec</a></span><span class="op">(</span></span>
 <span>  loglik_fn <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">total</span><span class="op">)</span> <span class="op">{</span></span>
@@ -455,7 +462,7 @@ equivalence detection works correctly.</p>
 <div class="section level3">
 <h3 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h3>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load equivalent model pairs</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">equivalent_models</span><span class="op">)</span></span>
 <span></span>
@@ -467,7 +474,7 @@ equivalence detection works correctly.</p>
 <div class="section level3">
 <h3 id="testing-the-exponential-gamma-equivalence">Testing the exponential-gamma equivalence<a class="anchor" aria-label="anchor" href="#testing-the-exponential-gamma-equivalence"></a>
 </h3>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generate exponential data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">100</span>, rate <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
@@ -488,7 +495,7 @@ equivalence detection works correctly.</p>
 <div class="section level3">
 <h3 id="normal-with-sd-vs-variance-parameterization">Normal with SD vs variance parameterization<a class="anchor" aria-label="anchor" href="#normal-with-sd-vs-variance-parameterization"></a>
 </h3>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pair2</span> <span class="op">&lt;-</span> <span class="va">equivalent_models</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nPair 2:"</span>, <span class="va">pair2</span><span class="op">$</span><span class="va">description</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -511,7 +518,7 @@ equivalence detection works correctly.</p>
 <div class="section level3">
 <h3 id="weibull-exponential-equivalence">Weibull-exponential equivalence<a class="anchor" aria-label="anchor" href="#weibull-exponential-equivalence"></a>
 </h3>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pair3</span> <span class="op">&lt;-</span> <span class="va">equivalent_models</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nPair 3:"</span>, <span class="va">pair3</span><span class="op">$</span><span class="va">description</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -604,11 +611,11 @@ identifiability analysis</p></li>
 <div class="section level2">
 <h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
-<span><span class="co">#&gt; Running under: Ubuntu 24.04.4 LTS</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 24.04.5 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
 <span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
@@ -631,14 +638,14 @@ identifiability analysis</p></li>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] digest_0.6.39       desc_1.4.3          R6_2.6.1           </span></span>
-<span><span class="co">#&gt;  [4] numDeriv_2016.8-1.1 fastmap_1.2.0       xfun_0.59          </span></span>
-<span><span class="co">#&gt;  [7] cachem_1.1.0        knitr_1.51          htmltools_0.5.9    </span></span>
-<span><span class="co">#&gt; [10] rmarkdown_2.31      lifecycle_1.0.5     cli_3.6.6          </span></span>
-<span><span class="co">#&gt; [13] svglite_2.2.2       sass_0.4.10         pkgdown_2.2.0      </span></span>
+<span><span class="co">#&gt;  [4] numDeriv_2016.8-1.1 fastmap_1.2.0       xfun_0.61          </span></span>
+<span><span class="co">#&gt;  [7] cachem_1.1.0        knitr_1.52          htmltools_0.5.9    </span></span>
+<span><span class="co">#&gt; [10] rmarkdown_2.32      lifecycle_1.0.5     cli_3.6.6          </span></span>
+<span><span class="co">#&gt; [13] svglite_2.2.2       sass_0.4.10         pkgdown_2.2.1      </span></span>
 <span><span class="co">#&gt; [16] textshaping_1.0.5   jquerylib_0.1.4     systemfonts_1.3.2  </span></span>
-<span><span class="co">#&gt; [19] compiler_4.6.1      tools_4.6.1         bslib_0.11.0       </span></span>
-<span><span class="co">#&gt; [22] evaluate_1.0.5      Rcpp_1.1.1-1.1      yaml_2.3.12        </span></span>
-<span><span class="co">#&gt; [25] otel_0.2.0          jsonlite_2.0.0      rlang_1.2.0        </span></span>
+<span><span class="co">#&gt; [19] compiler_4.6.1      tools_4.6.1         bslib_0.12.0       </span></span>
+<span><span class="co">#&gt; [22] evaluate_1.0.5      Rcpp_1.1.2          yaml_2.3.12        </span></span>
+<span><span class="co">#&gt; [25] otel_0.2.0          jsonlite_2.0.0      rlang_1.3.0        </span></span>
 <span><span class="co">#&gt; [28] fs_2.1.0            htmlwidgets_1.6.4</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -652,7 +659,7 @@ identifiability analysis</p></li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

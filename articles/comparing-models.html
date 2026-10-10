@@ -78,7 +78,7 @@
                         <h4 data-toc-skip class="author">Gilles
 Colling</h4>
             
-            <h4 data-toc-skip class="date">2026-06-29</h4>
+            <h4 data-toc-skip class="date">2026-10-10</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/gcol33/degen/blob/main/vignettes/comparing-models.Rmd" class="external-link"><code>vignettes/comparing-models.Rmd</code></a></small>
       <div class="d-none name"><code>comparing-models.Rmd</code></div>
@@ -86,6 +86,13 @@ Colling</h4>
 
     
     
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span>                   <span class="co"># development version</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"gcol33/degen"</span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
@@ -101,7 +108,7 @@ dataset.</p>
 <h3 id="setting-up-the-comparison">Setting up the comparison<a class="anchor" aria-label="anchor" href="#setting-up-the-comparison"></a>
 </h3>
 <p>First, define the two models you want to compare:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Exponential distribution</span></span>
 <span><span class="va">exp_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_spec.html">model_spec</a></span><span class="op">(</span></span>
 <span>  loglik_fn <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">lambda</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">dexp</a></span><span class="op">(</span><span class="va">y</span>, rate <span class="op">=</span> <span class="va">lambda</span>, log <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -131,7 +138,7 @@ dataset.</p>
 <h3 id="running-the-comparison">Running the comparison<a class="anchor" aria-label="anchor" href="#running-the-comparison"></a>
 </h3>
 <p>Use <code><a href="../reference/compare_surfaces.html">compare_surfaces()</a></code> to test equivalence:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generate test data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">100</span>, rate <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
@@ -170,7 +177,7 @@ A</p></li>
 </h3>
 <p>The grid method samples parameter space uniformly and checks if each
 point can be matched:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result_grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_surfaces.html">compare_surfaces</a></span><span class="op">(</span><span class="va">pair</span>, <span class="va">y</span>, n_points <span class="op">=</span> <span class="fl">30</span>,</span>
 <span>                                method <span class="op">=</span> <span class="st">"grid"</span>, progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">result_grid</span><span class="op">$</span><span class="va">max_discrepancy</span></span>
@@ -182,7 +189,7 @@ cases.</p>
 <h3 id="optimization-method">Optimization method<a class="anchor" aria-label="anchor" href="#optimization-method"></a>
 </h3>
 <p>The optimization method actively searches for counterexamples:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result_optim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_surfaces.html">compare_surfaces</a></span><span class="op">(</span><span class="va">pair</span>, <span class="va">y</span>, n_points <span class="op">=</span> <span class="fl">30</span>,</span>
 <span>                                 method <span class="op">=</span> <span class="st">"optimization"</span>, progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">result_optim</span><span class="op">$</span><span class="va">max_discrepancy</span></span>
@@ -196,7 +203,7 @@ want to find a clear counterexample quickly.</p>
 </h2>
 <p>The <code>tol</code> parameter determines how close likelihoods must
 be:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Strict tolerance</span></span>
 <span><span class="va">strict</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_surfaces.html">compare_surfaces</a></span><span class="op">(</span><span class="va">pair</span>, <span class="va">y</span>, n_points <span class="op">=</span> <span class="fl">30</span>, tol <span class="op">=</span> <span class="fl">1e-8</span>, progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
@@ -221,7 +228,7 @@ differences</p></li>
 <h2 id="comparing-non-equivalent-models">Comparing non-equivalent models<a class="anchor" aria-label="anchor" href="#comparing-non-equivalent-models"></a>
 </h2>
 <p>When models differ, the comparison reveals the discrepancy:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Gamma with shape = 2 (NOT equivalent to exponential)</span></span>
 <span><span class="va">gamma2_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_spec.html">model_spec</a></span><span class="op">(</span></span>
 <span>  loglik_fn <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">rate</span><span class="op">)</span> <span class="op">{</span></span>
@@ -250,7 +257,7 @@ differences</p></li>
 </h3>
 <p>When you have several models, <code><a href="../reference/equivalence_classes.html">equivalence_classes()</a></code>
 performs all pairwise comparisons and groups equivalent models:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Define multiple models</span></span>
 <span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  exp <span class="op">=</span> <span class="va">exp_spec</span>,</span>
@@ -271,7 +278,7 @@ performs all pairwise comparisons and groups equivalent models:</p>
 <div class="section level3">
 <h3 id="accessing-results">Accessing results<a class="anchor" aria-label="anchor" href="#accessing-results"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Number of distinct classes</span></span>
 <span><span class="fu"><a href="../reference/n_classes.html">n_classes</a></span><span class="op">(</span><span class="va">classes</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 3</span></span>
@@ -293,7 +300,7 @@ performs all pairwise comparisons and groups equivalent models:</p>
 <div class="section level3">
 <h3 id="viewing-the-discrepancy-matrix">Viewing the discrepancy matrix<a class="anchor" aria-label="anchor" href="#viewing-the-discrepancy-matrix"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Pairwise discrepancies</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">classes</span><span class="op">$</span><span class="va">discrepancies</span>, <span class="fl">6</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               exp     gamma1   gamma2</span></span>
@@ -308,14 +315,14 @@ performs all pairwise comparisons and groups equivalent models:</p>
 <div class="section level3">
 <h3 id="comparing-all-pairs-systematically">Comparing all pairs systematically<a class="anchor" aria-label="anchor" href="#comparing-all-pairs-systematically"></a>
 </h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Compare all pairs with detailed output</span></span>
 <span><span class="va">all_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_all_pairs.html">compare_all_pairs</a></span><span class="op">(</span><span class="va">models</span>, <span class="va">y</span>, n_points <span class="op">=</span> <span class="fl">20</span>, progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="finding-equivalent-models">Finding equivalent models<a class="anchor" aria-label="anchor" href="#finding-equivalent-models"></a>
 </h3>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find all models equivalent to the exponential</span></span>
 <span><span class="va">equiv_to_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/find_equivalent_to.html">find_equivalent_to</a></span><span class="op">(</span><span class="va">models</span>, reference <span class="op">=</span> <span class="st">"exp"</span>, <span class="va">y</span>, n_points <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -326,7 +333,7 @@ performs all pairwise comparisons and groups equivalent models:</p>
 <div class="section level3">
 <h3 id="equivalence-matrix-plot">Equivalence matrix plot<a class="anchor" aria-label="anchor" href="#equivalence-matrix-plot"></a>
 </h3>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Visual matrix of equivalence relationships</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">classes</span><span class="op">)</span></span></code></pre></div>
 <p><img src="comparing-models_files/figure-html/plot-equiv-1.svg" class="r-plt" alt="Heatmap showing pairwise equivalence relationships between three models (exp, gamma1, gamma2). Equivalent pairs shown in green, non-equivalent in red. Exponential and Gamma(1) are equivalent to each other but distinct from Gamma(2)." width="672"></p>
@@ -335,7 +342,7 @@ performs all pairwise comparisons and groups equivalent models:</p>
 <h3 id="likelihood-surface-visualization">Likelihood surface visualization<a class="anchor" aria-label="anchor" href="#likelihood-surface-visualization"></a>
 </h3>
 <p>For two-parameter models, visualize the likelihood surface:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># A two-parameter model</span></span>
 <span><span class="va">norm_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/model_spec_normal.html">model_spec_normal</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">y_norm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">50</span>, mean <span class="op">=</span> <span class="fl">5</span>, sd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
@@ -350,7 +357,7 @@ performs all pairwise comparisons and groups equivalent models:</p>
 </h2>
 <p>When results are unexpected, use <code><a href="../reference/debug_comparison.html">debug_comparison()</a></code> to
 trace the algorithm:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Detailed trace of a single comparison</span></span>
 <span><span class="va">trace</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/debug_comparison.html">debug_comparison</a></span><span class="op">(</span><span class="va">pair</span>, <span class="va">y</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>lambda <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, direction <span class="op">=</span> <span class="st">"A_to_B"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; === Debug Trace ===</span></span>
@@ -405,7 +412,7 @@ region</p></li>
 <code>tol</code></p></li>
 </ul>
 <p>To increase confidence:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># More test points</span></span>
 <span><span class="va">result_thorough</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_surfaces.html">compare_surfaces</a></span><span class="op">(</span><span class="va">pair</span>, <span class="va">y</span>, n_points <span class="op">=</span> <span class="fl">200</span>, tol <span class="op">=</span> <span class="fl">1e-8</span><span class="op">)</span></span>
 <span></span>
@@ -429,11 +436,11 @@ examples</p></li>
 <div class="section level2">
 <h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
-<span><span class="co">#&gt; Running under: Ubuntu 24.04.4 LTS</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 24.04.5 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
 <span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
@@ -456,12 +463,12 @@ examples</p></li>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] digest_0.6.39     desc_1.4.3        R6_2.6.1          fastmap_1.2.0    </span></span>
-<span><span class="co">#&gt;  [5] xfun_0.59         cachem_1.1.0      knitr_1.51        htmltools_0.5.9  </span></span>
-<span><span class="co">#&gt;  [9] rmarkdown_2.31    lifecycle_1.0.5   cli_3.6.6         svglite_2.2.2    </span></span>
-<span><span class="co">#&gt; [13] sass_0.4.10       pkgdown_2.2.0     textshaping_1.0.5 jquerylib_0.1.4  </span></span>
-<span><span class="co">#&gt; [17] systemfonts_1.3.2 compiler_4.6.1    tools_4.6.1       bslib_0.11.0     </span></span>
-<span><span class="co">#&gt; [21] evaluate_1.0.5    Rcpp_1.1.1-1.1    yaml_2.3.12       otel_0.2.0       </span></span>
-<span><span class="co">#&gt; [25] jsonlite_2.0.0    rlang_1.2.0       fs_2.1.0          htmlwidgets_1.6.4</span></span></code></pre></div>
+<span><span class="co">#&gt;  [5] xfun_0.61         cachem_1.1.0      knitr_1.52        htmltools_0.5.9  </span></span>
+<span><span class="co">#&gt;  [9] rmarkdown_2.32    lifecycle_1.0.5   cli_3.6.6         svglite_2.2.2    </span></span>
+<span><span class="co">#&gt; [13] sass_0.4.10       pkgdown_2.2.1     textshaping_1.0.5 jquerylib_0.1.4  </span></span>
+<span><span class="co">#&gt; [17] systemfonts_1.3.2 compiler_4.6.1    tools_4.6.1       bslib_0.12.0     </span></span>
+<span><span class="co">#&gt; [21] evaluate_1.0.5    Rcpp_1.1.2        yaml_2.3.12       otel_0.2.0       </span></span>
+<span><span class="co">#&gt; [25] jsonlite_2.0.0    rlang_1.3.0       fs_2.1.0          htmlwidgets_1.6.4</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -474,7 +481,7 @@ examples</p></li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
