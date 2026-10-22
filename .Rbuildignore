@@ -22,3 +22,6 @@
 ^Meta$
 ^vignettes/.*_cache$
 ^vignettes/.*_files$
+^sidecars$
+^\.run.*$
+^CITATION\.cff$

@@ -31,3 +31,6 @@ covr/
 *.gcda
 /doc/
 /Meta/
+
+# Local run scripts
+.run*
