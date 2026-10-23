@@ -13,7 +13,6 @@ src/*.dll
 *.tar.gz
 
 # Documentation
-docs/
 inst/doc
 
 # IDE
