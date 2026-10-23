@@ -2,182 +2,249 @@
 
 *two models the data can’t tell apart*
 
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![R-CMD-check](https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml)
-[![Codecov test
-coverage](https://codecov.io/gh/gcol33/degen/graph/badge.svg)](https://app.codecov.io/gh/gcol33/degen)
-[![License:
-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+degen checks whether competing statistical models can be distinguished
+by data, such as an exponential model and a gamma model with its shape
+fixed at one, and whether the parameters of a single model can be
+estimated, such as two means that enter the likelihood only through
+their sum.
 
-**Detection of observational equivalence and non-identifiability in
-parametric models, from their log-likelihood surfaces.**
+Two models are observationally equivalent when they assign the same
+probability to every possible dataset, so no amount of data separates
+them. degen compares their log-likelihood surfaces: for parameter values
+of one model it searches for values of the other that give the same
+log-likelihood, in both directions, and reports the largest discrepancy
+against a tolerance. For a single model it computes the Fisher
+information, the curvature of the log-likelihood, and reads its
+eigenvalues: an eigenvalue near zero marks a parameter combination the
+likelihood is flat in. You can then decide which of the competing models
+your data can support, or reparameterize the model so each parameter is
+estimable.
 
-Hand it your model specifications. `degen` tells you which ones the data
-can actually distinguish: it compares likelihood surfaces to find
-observationally equivalent models, reads the Fisher information
-eigenspectrum to find parameters the likelihood is flat in, and groups
-models into equivalence classes by union-find. Two parameterizations
-that collapse to the same distribution will fit equally well forever,
-and the usual diagnostics will not say so.
+degen supports:
+
+- **Any log-likelihood.**
+  [`model_spec()`](https://gillescolling.com/degen/reference/model_spec.html)
+  turns a function of the data and named parameters into a model. Ten
+  distributions are built in
+  ([`model_spec_normal()`](https://gcol33.github.io/degen/reference/model_spec_normal.md),
+  [`model_spec_gamma()`](https://gcol33.github.io/degen/reference/model_spec_gamma.md),
+  [`model_spec_poisson()`](https://gcol33.github.io/degen/reference/model_spec_poisson.md),
+  [`model_spec_weibull()`](https://gcol33.github.io/degen/reference/model_spec_weibull.md)
+  and others), and
+  [`model_spec_from_fit()`](https://gcol33.github.io/degen/reference/model_spec_from_fit.md)
+  takes the specification from a fitted `lm` or `glm`.
+- **Pairs and sets of models.**
+  [`compare_surfaces()`](https://gillescolling.com/degen/reference/compare_surfaces.html)
+  tests two models by grid search or optimization, and
+  [`equivalence_classes()`](https://gcol33.github.io/degen/reference/equivalence_classes.md)
+  groups a list of models into classes of mutually equivalent ones by
+  union-find.
+- **Parameter mappings.**
+  [`check_exact_equivalence()`](https://gcol33.github.io/degen/reference/check_exact_equivalence.md)
+  tests whether given transformations map the parameters of one model
+  onto the other, and
+  [`detect_linear_reparam()`](https://gcol33.github.io/degen/reference/detect_linear_reparam.md)
+  searches for a linear reparameterization.
+- **Identifiability.**
+  [`identifiability_check()`](https://gillescolling.com/degen/reference/identifiability_check.html)
+  reports which parameters are not identified and which combinations
+  are, from the eigenvalues of the Fisher information;
+  [`profile_likelihood()`](https://gcol33.github.io/degen/reference/profile_likelihood.md)
+  and
+  [`profile_ci()`](https://gcol33.github.io/degen/reference/profile_ci.md)
+  give profile curves and the intervals read from them.
+- **Stability of a verdict.**
+  [`sensitivity_analysis()`](https://gcol33.github.io/degen/reference/sensitivity_analysis.md)
+  repeats a comparison over tolerances and grid sizes, and
+  [`bootstrap_equivalence()`](https://gcol33.github.io/degen/reference/bootstrap_equivalence.md)
+  and
+  [`cross_validate_equivalence()`](https://gcol33.github.io/degen/reference/cross_validate_equivalence.md)
+  resample the data.
+- **Bayesian models.**
+  [`compare_posteriors()`](https://gcol33.github.io/degen/reference/compare_posteriors.md)
+  and
+  [`extract_samples()`](https://gcol33.github.io/degen/reference/extract_samples.md)
+  work on draws from [brms](https://paulbuerkner.com/brms/),
+  [rstan](https://mc-stan.org/rstan/) and
+  [rstanarm](https://mc-stan.org/rstanarm/), and
+  [`prior_sensitivity()`](https://gcol33.github.io/degen/reference/prior_sensitivity.md)
+  checks how much a prior contributes to identifying a parameter.
+
+A comparison that finds no discrepancy above the tolerance is evidence
+of equivalence over the points tested, not a proof, and the verdict
+depends on the tolerance and the number of points. [Comparing
+Models](https://gillescolling.com/degen/articles/comparing-models.html)
+shows how both change it.
 
 ## Installation
 
+degen is not on CRAN yet. It compiles C++ code, so install the build
+tools for your operating system first:
+
+| Operating system | Build tools |
+|----|----|
+| Windows | [Rtools](https://cran.r-project.org/bin/windows/Rtools/) matching your R version |
+| macOS | Run `xcode-select --install` in Terminal |
+| Debian / Ubuntu | Install `r-base-dev` |
+
+Check that R can find the compiler:
+
 ``` r
 
-install.packages("pak")                   # development version
+pkgbuild::has_build_tools(debug = TRUE)
+```
+
+Then install degen from GitHub:
+
+``` r
+
+# install.packages("pak")
 pak::pak("gcol33/degen")
 ```
 
-## Quick start
+degen needs no system libraries beyond the compiler. Its C++ code links
+only to Rcpp, which is installed from CRAN with the package.
+
+## Usage
+
+1.  Define each model with
+    [`model_spec()`](https://gcol33.github.io/degen/reference/model_spec.md)
+    or a built-in such as
+    [`model_spec_exponential()`](https://gcol33.github.io/degen/reference/model_spec_exponential.md).
+2.  Test two models for equivalence with
+    [`equivalence_pair()`](https://gcol33.github.io/degen/reference/equivalence_pair.md)
+    and
+    [`compare_surfaces()`](https://gcol33.github.io/degen/reference/compare_surfaces.md).
+3.  Check the parameters of one model with
+    [`identifiability_check()`](https://gcol33.github.io/degen/reference/identifiability_check.md).
+
+A model specification holds a log-likelihood function whose first
+argument is the data `y` and whose other arguments are the parameters,
+named in `par_names`, with optional bounds. The data is a numeric
+vector, or whatever the log-likelihood function accepts.
 
 ``` r
 
 library(degen)
 
-# are these two models telling the data apart, or just telling stories?
-pair   <- equivalence_pair(model_spec_exponential(),
-                           model_spec_gamma(parameterization = "shape_rate"))
-result <- compare_surfaces(pair, y = rexp(200, rate = 2))
-result
+set.seed(1)
+y <- rexp(200, rate = 2)
 
-# is a single model's likelihood flat in some direction?
-info <- fisher_information(model_spec_gamma(parameterization = "shape_rate"),
-                           y = rgamma(200, 2, 3), par = c(shape = 2, rate = 3))
-identifiability_check(info)
+exp_model <- model_spec_exponential()
+gamma_model <- model_spec_gamma(par = "rate", known_shape = 1)
+pair <- equivalence_pair(exp_model, gamma_model)
+
+compare_surfaces(pair, y, tol = 1e-4)
+#> <surface_comparison>
+#> Conclusion: Models appear EQUIVALENT
+#> Points tested: 200
+#> Max discrepancy: 6.79e-06
+#> Tolerance: 1.00e-04
+#> Method: grid
 ```
 
-## The question convergence checks skip
+A gamma distribution with shape one is the exponential distribution, so
+the largest discrepancy over the 200 points tested stays below the
+tolerance. With the default tolerance of `1e-6` the discrepancy of the
+numerical search, about `7e-6`, would exceed it.
 
-Standard diagnostics ask whether a fit converged, predicts, and leaves
-clean residuals. None of them ask whether the model structure was
-distinguishable from its alternatives in the first place. When two
-specifications encode the same distribution over observable data, no
-amount of data separates them; when a parameter sits in a flat direction
-of the likelihood, it is unestimable. Both show up downstream as
-convergence failures, ridge-like surfaces, or answers that flip between
-software packages, and diagnosing them by hand means comparing
-likelihood functions term by term.
-
-`degen` does that comparison for you, and it can do it two ways:
-numerically, by searching the likelihood surfaces for a separating
-point, and symbolically, by checking exact parameter equivalence and
-detecting linear reparameterizations. The numerical verdict is evidence
-(no counterexample found in the searched region); the symbolic verdict
-is a proof of equivalence when it succeeds.
-
-## What it works on
-
-- **[`model_spec()`](https://gcol33.github.io/degen/reference/model_spec.md)**:
-  define a model from any log-likelihood function, with named parameters
-  and bounds. Ten built-ins are ready
-  ([`model_spec_normal()`](https://gcol33.github.io/degen/reference/model_spec_normal.md),
-  [`model_spec_gamma()`](https://gcol33.github.io/degen/reference/model_spec_gamma.md),
-  [`model_spec_poisson()`](https://gcol33.github.io/degen/reference/model_spec_poisson.md),
-  [`model_spec_weibull()`](https://gcol33.github.io/degen/reference/model_spec_weibull.md),
-  and the rest), and
-  [`model_spec_from_fit()`](https://gcol33.github.io/degen/reference/model_spec_from_fit.md)
-  pulls a spec straight out of a fitted `lm` or `glm`.
-- **[`compare_surfaces()`](https://gcol33.github.io/degen/reference/compare_surfaces.md)
-  /
-  [`equivalence_pair()`](https://gcol33.github.io/degen/reference/equivalence_pair.md)**:
-  test two models for observational equivalence, by grid search or
-  optimization, in both directions.
-- **[`check_exact_equivalence()`](https://gcol33.github.io/degen/reference/check_exact_equivalence.md)
-  /
-  [`detect_linear_reparam()`](https://gcol33.github.io/degen/reference/detect_linear_reparam.md)**:
-  the symbolic path, for when you want a proof rather than evidence.
-- **[`equivalence_classes()`](https://gcol33.github.io/degen/reference/equivalence_classes.md)
-  /
-  [`compare_all_pairs()`](https://gcol33.github.io/degen/reference/compare_all_pairs.md)**:
-  group a list of models into empirical equivalence classes
-  (union-find), or build the full pairwise comparison matrix.
-- **[`fisher_information()`](https://gcol33.github.io/degen/reference/fisher_information.md)
-  /
-  [`identifiability_check()`](https://gcol33.github.io/degen/reference/identifiability_check.md)
-  /
-  [`null_directions()`](https://gcol33.github.io/degen/reference/null_directions.md)**:
-  observed or expected information, eigenvalue decomposition, and the
-  parameter combinations the data cannot pin down.
-- **[`profile_likelihood()`](https://gcol33.github.io/degen/reference/profile_likelihood.md)
-  /
-  [`profile_ci()`](https://gcol33.github.io/degen/reference/profile_ci.md)**:
-  profile curves and the confidence intervals read off them.
-- **[`diagnose_model()`](https://gcol33.github.io/degen/reference/diagnose_model.md)**:
-  the single-call report covering all of the above.
-
-## Numerical or symbolic?
-
-|  | [`compare_surfaces()`](https://gcol33.github.io/degen/reference/compare_surfaces.md) | [`check_exact_equivalence()`](https://gcol33.github.io/degen/reference/check_exact_equivalence.md) |
-|----|----|----|
-| Needs data? | Yes | No |
-| Returns | Evidence (no counterexample in searched region) | Proof of equivalence when it succeeds |
-| Handles arbitrary log-likelihoods? | Yes | Within the supported algebra |
-| Best for | Any pair of specifications | Suspected exact reparameterizations |
-
-Run
-[`compare_surfaces()`](https://gcol33.github.io/degen/reference/compare_surfaces.md)
-to see whether the data can tell two models apart; reach for the
-symbolic path when you suspect they are exactly the same model wearing
-different parameters.
-
-## Custom log-likelihoods
-
-Any function that maps data and named parameters to a scalar
-log-likelihood is a model:
+The second model below has two means that enter the likelihood only
+through their sum:
 
 ``` r
 
-# a model degen has never seen, defined in three lines
-spec <- model_spec(
-  loglik_fn  = function(y, mu, sigma) sum(dnorm(y, mu, sigma, log = TRUE)),
-  par_names  = c("mu", "sigma"),
-  par_bounds = list(sigma = c(1e-6, Inf))
+sum_model <- model_spec(
+  loglik_fn = function(y, a, b) {
+    sum(dnorm(y, mean = a + b, sd = 1, log = TRUE))
+  },
+  par_names = c("a", "b")
 )
 
-info <- fisher_information(spec, y = rnorm(200, 1, 2), par = c(mu = 1, sigma = 2))
-identifiability_check(info)
+y2 <- rnorm(100, mean = 5)
+identifiability_check(sum_model, y2, par = c(a = 2, b = 3))
+#> <identifiability_result>
+#> Overall: Model has NON-IDENTIFIABLE parameters
+#> 
+#> Parameter status:
+#>   a: NON-IDENTIFIABLE
+#>   b: NON-IDENTIFIABLE
+#> 
+#> Non-identified directions:
+#>   0.71*a -0.71*b
+#> 
+#> Identified functions:
+#>   -0.71*a -0.71*b
+#> 
+#> Condition number: 4.1e+12
+#> Rank: 1 / 2
 ```
 
-This is the case `degen` is built for: mixture models with label
-switching, mechanistic models with competing functional forms,
-hierarchical models whose variance components trade off. Wherever model
-structure carries meaning, it tells you how much of that structure the
-data actually support.
+Neither parameter is identified on its own; their sum is.
 
-## Robustness and Bayesian models
+## Comparing several models
 
-An equivalence verdict should not hinge on a tolerance setting.
-[`sensitivity_analysis()`](https://gcol33.github.io/degen/reference/sensitivity_analysis.md)
-sweeps tolerances and grid sizes,
-[`bootstrap_equivalence()`](https://gcol33.github.io/degen/reference/bootstrap_equivalence.md)
-and
-[`cross_validate_equivalence()`](https://gcol33.github.io/degen/reference/cross_validate_equivalence.md)
-resample the test, and
-[`prior_sensitivity()`](https://gcol33.github.io/degen/reference/prior_sensitivity.md)
-checks how far a prior is doing the identifying. For fitted Bayesian
+[`equivalence_classes()`](https://gcol33.github.io/degen/reference/equivalence_classes.md)
+compares every pair in a list of models and groups them into classes of
+equivalent models:
+
+``` r
+
+gamma2_model <- model_spec_gamma(par = "rate", known_shape = 2)
+models <- list(exponential = exp_model, gamma1 = gamma_model,
+               gamma2 = gamma2_model)
+equivalence_classes(models, y, tol = 1e-4)
+```
+
+[`compare_all_pairs()`](https://gcol33.github.io/degen/reference/compare_all_pairs.md)
+returns the full matrix of pairwise comparisons, and
+[`find_equivalent_to()`](https://gcol33.github.io/degen/reference/find_equivalent_to.md)
+lists the models equivalent to one of them. [Case
+Studies](https://gillescolling.com/degen/articles/case-studies.html)
+applies this to competing ecological models of population counts.
+
+## Models from fits and Bayesian draws
+
+[`model_spec_from_fit()`](https://gcol33.github.io/degen/reference/model_spec_from_fit.md)
+takes the specification from a fitted `lm` or `glm`, so an existing
+model can be checked without writing its log-likelihood. For Bayesian
 models,
 [`compare_posteriors()`](https://gcol33.github.io/degen/reference/compare_posteriors.md)
-and
-[`extract_samples()`](https://gcol33.github.io/degen/reference/extract_samples.md)
-work on MCMC draws from `brms`, `rstan`, and `rstanarm`. Results export
-through
+compares two models on their posterior draws. Results export to JSON,
+CSV or Markdown with
 [`export_results()`](https://gcol33.github.io/degen/reference/export_results.md)
-(JSON, CSV, markdown) and
+and to a LaTeX table with
 [`to_latex()`](https://gcol33.github.io/degen/reference/to_latex.md).
 
 ## Documentation
 
-- [Introduction](https://gcol33.github.io/degen/articles/introduction.html)
-- [Model
-  Specification](https://gcol33.github.io/degen/articles/model-specification.html)
+Start with [Introduction to
+degen](https://gillescolling.com/degen/articles/introduction.html):
+observational equivalence and identifiability, with a first comparison,
+an identifiability check and equivalence classes.
+
+- [Writing Model
+  Specifications](https://gillescolling.com/degen/articles/model-specification.html):
+  log-likelihood functions, parameter bounds, validation and common
+  mistakes.
 - [Comparing
-  Models](https://gcol33.github.io/degen/articles/comparing-models.html)
+  Models](https://gillescolling.com/degen/articles/comparing-models.html):
+  grid and optimization search, tolerances, equivalence classes and
+  plots of the likelihood surface.
 - [Identifiability
-  Diagnostics](https://gcol33.github.io/degen/articles/identifiability-diagnostics.html)
+  Diagnostics](https://gillescolling.com/degen/articles/identifiability-diagnostics.html):
+  Fisher information, null directions and profile likelihoods.
 - [Case
-  Studies](https://gcol33.github.io/degen/articles/case-studies.html)
-- [Function Reference](https://gcol33.github.io/degen/reference/)
+  Studies](https://gillescolling.com/degen/articles/case-studies.html):
+  competing models applied to example data.
+- [Full reference](https://gillescolling.com/degen/reference/): every
+  function.
+
+## Getting help
+
+Questions and bug reports go to the [GitHub
+issues](https://github.com/gcol33/degen/issues). A bug report is easiest
+to act on with a small reproducible example, for instance made with
+[reprex](https://reprex.tidyverse.org/).
 
 ## Support
 
@@ -195,18 +262,34 @@ Coffee](https://img.shields.io/badge/-Buy%20me%20a%20coffee-FFDD00?logo=buymeaco
 
 ## License
 
-MIT (see the LICENSE.md file)
+degen is licensed under MIT.
 
 ## Citation
 
+To cite degen in publications use:
+
+``` text
+Colling G (2026). _degen: Detect Observational Equivalence and
+Non-Identifiability in Models_. R package version 0.15.0,
+<https://github.com/gcol33/degen>.
+```
+
+BibTeX:
+
 ``` bibtex
-@software{degen,
-  author = {Colling, Gilles},
-  title = {degen: Detect Observational Equivalence and Non-Identifiability in Parametric Models},
-  year = {2025},
-  url = {https://github.com/gcol33/degen}
+@Manual{colling2026degen,
+  title = {degen: Detect Observational Equivalence and Non-Identifiability in
+Models},
+  author = {Gilles Colling},
+  year = {2026},
+  note = {R package version 0.15.0},
+  url = {https://github.com/gcol33/degen},
 }
 ```
+
+Download the citation as
+[BibTeX](https://gillescolling.com/degen/degen.bib) or
+[RIS](https://gillescolling.com/degen/degen.ris).
 
 # Package index
 

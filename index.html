@@ -74,130 +74,157 @@
 <div class="page-header"><h1 id="degen">degen<a class="anchor" aria-label="anchor" href="#degen"></a>
 </h1></div>
 <p><em>two models the data can’t tell apart</em></p>
-<p><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/gcol33/degen" class="external-link"><img src="https://codecov.io/gh/gcol33/degen/graph/badge.svg" alt="Codecov test coverage"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
-<p><strong>Detection of observational equivalence and non-identifiability in parametric models, from their log-likelihood surfaces.</strong></p>
-<p>Hand it your model specifications. <code>degen</code> tells you which ones the data can actually distinguish: it compares likelihood surfaces to find observationally equivalent models, reads the Fisher information eigenspectrum to find parameters the likelihood is flat in, and groups models into equivalence classes by union-find. Two parameterizations that collapse to the same distribution will fit equally well forever, and the usual diagnostics will not say so.</p>
+<!-- badges: start -->
+
+<p>degen checks whether competing statistical models can be distinguished by data, such as an exponential model and a gamma model with its shape fixed at one, and whether the parameters of a single model can be estimated, such as two means that enter the likelihood only through their sum.</p>
+<p>Two models are observationally equivalent when they assign the same probability to every possible dataset, so no amount of data separates them. degen compares their log-likelihood surfaces: for parameter values of one model it searches for values of the other that give the same log-likelihood, in both directions, and reports the largest discrepancy against a tolerance. For a single model it computes the Fisher information, the curvature of the log-likelihood, and reads its eigenvalues: an eigenvalue near zero marks a parameter combination the likelihood is flat in. You can then decide which of the competing models your data can support, or reparameterize the model so each parameter is estimable.</p>
+<p>degen supports:</p>
+<ul>
+<li>
+<strong>Any log-likelihood.</strong> <a href="https://gillescolling.com/degen/reference/model_spec.html" class="external-link"><code>model_spec()</code></a> turns a function of the data and named parameters into a model. Ten distributions are built in (<code><a href="reference/model_spec_normal.html">model_spec_normal()</a></code>, <code><a href="reference/model_spec_gamma.html">model_spec_gamma()</a></code>, <code><a href="reference/model_spec_poisson.html">model_spec_poisson()</a></code>, <code><a href="reference/model_spec_weibull.html">model_spec_weibull()</a></code> and others), and <code><a href="reference/model_spec_from_fit.html">model_spec_from_fit()</a></code> takes the specification from a fitted <code>lm</code> or <code>glm</code>.</li>
+<li>
+<strong>Pairs and sets of models.</strong> <a href="https://gillescolling.com/degen/reference/compare_surfaces.html" class="external-link"><code>compare_surfaces()</code></a> tests two models by grid search or optimization, and <code><a href="reference/equivalence_classes.html">equivalence_classes()</a></code> groups a list of models into classes of mutually equivalent ones by union-find.</li>
+<li>
+<strong>Parameter mappings.</strong> <code><a href="reference/check_exact_equivalence.html">check_exact_equivalence()</a></code> tests whether given transformations map the parameters of one model onto the other, and <code><a href="reference/detect_linear_reparam.html">detect_linear_reparam()</a></code> searches for a linear reparameterization.</li>
+<li>
+<strong>Identifiability.</strong> <a href="https://gillescolling.com/degen/reference/identifiability_check.html" class="external-link"><code>identifiability_check()</code></a> reports which parameters are not identified and which combinations are, from the eigenvalues of the Fisher information; <code><a href="reference/profile_likelihood.html">profile_likelihood()</a></code> and <code><a href="reference/profile_ci.html">profile_ci()</a></code> give profile curves and the intervals read from them.</li>
+<li>
+<strong>Stability of a verdict.</strong> <code><a href="reference/sensitivity_analysis.html">sensitivity_analysis()</a></code> repeats a comparison over tolerances and grid sizes, and <code><a href="reference/bootstrap_equivalence.html">bootstrap_equivalence()</a></code> and <code><a href="reference/cross_validate_equivalence.html">cross_validate_equivalence()</a></code> resample the data.</li>
+<li>
+<strong>Bayesian models.</strong> <code><a href="reference/compare_posteriors.html">compare_posteriors()</a></code> and <code><a href="reference/extract_samples.html">extract_samples()</a></code> work on draws from <a href="https://paulbuerkner.com/brms/" class="external-link">brms</a>, <a href="https://mc-stan.org/rstan/" class="external-link">rstan</a> and <a href="https://mc-stan.org/rstanarm/" class="external-link">rstanarm</a>, and <code><a href="reference/prior_sensitivity.html">prior_sensitivity()</a></code> checks how much a prior contributes to identifying a parameter.</li>
+</ul>
+<p>A comparison that finds no discrepancy above the tolerance is evidence of equivalence over the points tested, not a proof, and the verdict depends on the tolerance and the number of points. <a href="https://gillescolling.com/degen/articles/comparing-models.html" class="external-link">Comparing Models</a> shows how both change it.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span>                   <span class="co"># development version</span></span>
-<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"gcol33/degen"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gcol33/degen" class="external-link">degen</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># are these two models telling the data apart, or just telling stories?</span></span>
-<span><span class="va">pair</span>   <span class="op">&lt;-</span> <span class="fu"><a href="reference/equivalence_pair.html">equivalence_pair</a></span><span class="op">(</span><span class="fu"><a href="reference/model_spec_exponential.html">model_spec_exponential</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>                           <span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>parameterization <span class="op">=</span> <span class="st">"shape_rate"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compare_surfaces.html">compare_surfaces</a></span><span class="op">(</span><span class="va">pair</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">200</span>, rate <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">result</span></span>
-<span></span>
-<span><span class="co"># is a single model's likelihood flat in some direction?</span></span>
-<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fisher_information.html">fisher_information</a></span><span class="op">(</span><span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>parameterization <span class="op">=</span> <span class="st">"shape_rate"</span><span class="op">)</span>,</span>
-<span>                           y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/GammaDist.html" class="external-link">rgamma</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">2</span>, rate <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/identifiability_check.html">identifiability_check</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="the-question-convergence-checks-skip">The question convergence checks skip<a class="anchor" aria-label="anchor" href="#the-question-convergence-checks-skip"></a>
-</h2>
-<p>Standard diagnostics ask whether a fit converged, predicts, and leaves clean residuals. None of them ask whether the model structure was distinguishable from its alternatives in the first place. When two specifications encode the same distribution over observable data, no amount of data separates them; when a parameter sits in a flat direction of the likelihood, it is unestimable. Both show up downstream as convergence failures, ridge-like surfaces, or answers that flip between software packages, and diagnosing them by hand means comparing likelihood functions term by term.</p>
-<p><code>degen</code> does that comparison for you, and it can do it two ways: numerically, by searching the likelihood surfaces for a separating point, and symbolically, by checking exact parameter equivalence and detecting linear reparameterizations. The numerical verdict is evidence (no counterexample found in the searched region); the symbolic verdict is a proof of equivalence when it succeeds.</p>
-</div>
-<div class="section level2">
-<h2 id="what-it-works-on">What it works on<a class="anchor" aria-label="anchor" href="#what-it-works-on"></a>
-</h2>
-<ul>
-<li>
-<strong><code><a href="reference/model_spec.html">model_spec()</a></code></strong>: define a model from any log-likelihood function, with named parameters and bounds. Ten built-ins are ready (<code><a href="reference/model_spec_normal.html">model_spec_normal()</a></code>, <code><a href="reference/model_spec_gamma.html">model_spec_gamma()</a></code>, <code><a href="reference/model_spec_poisson.html">model_spec_poisson()</a></code>, <code><a href="reference/model_spec_weibull.html">model_spec_weibull()</a></code>, and the rest), and <code><a href="reference/model_spec_from_fit.html">model_spec_from_fit()</a></code> pulls a spec straight out of a fitted <code>lm</code> or <code>glm</code>.</li>
-<li>
-<strong><code><a href="reference/compare_surfaces.html">compare_surfaces()</a></code> / <code><a href="reference/equivalence_pair.html">equivalence_pair()</a></code></strong>: test two models for observational equivalence, by grid search or optimization, in both directions.</li>
-<li>
-<strong><code><a href="reference/check_exact_equivalence.html">check_exact_equivalence()</a></code> / <code><a href="reference/detect_linear_reparam.html">detect_linear_reparam()</a></code></strong>: the symbolic path, for when you want a proof rather than evidence.</li>
-<li>
-<strong><code><a href="reference/equivalence_classes.html">equivalence_classes()</a></code> / <code><a href="reference/compare_all_pairs.html">compare_all_pairs()</a></code></strong>: group a list of models into empirical equivalence classes (union-find), or build the full pairwise comparison matrix.</li>
-<li>
-<strong><code><a href="reference/fisher_information.html">fisher_information()</a></code> / <code><a href="reference/identifiability_check.html">identifiability_check()</a></code> / <code><a href="reference/null_directions.html">null_directions()</a></code></strong>: observed or expected information, eigenvalue decomposition, and the parameter combinations the data cannot pin down.</li>
-<li>
-<strong><code><a href="reference/profile_likelihood.html">profile_likelihood()</a></code> / <code><a href="reference/profile_ci.html">profile_ci()</a></code></strong>: profile curves and the confidence intervals read off them.</li>
-<li>
-<strong><code><a href="reference/diagnose_model.html">diagnose_model()</a></code></strong>: the single-call report covering all of the above.</li>
-</ul>
-</div>
-<div class="section level2">
-<h2 id="numerical-or-symbolic">Numerical or symbolic?<a class="anchor" aria-label="anchor" href="#numerical-or-symbolic"></a>
-</h2>
+<p>degen is not on CRAN yet. It compiles C++ code, so install the build tools for your operating system first:</p>
 <table class="table">
 <colgroup>
-<col width="33%">
-<col width="33%">
-<col width="33%">
+<col width="50%">
+<col width="50%">
 </colgroup>
 <thead><tr>
-<th></th>
-<th><code><a href="reference/compare_surfaces.html">compare_surfaces()</a></code></th>
-<th><code><a href="reference/check_exact_equivalence.html">check_exact_equivalence()</a></code></th>
+<th>Operating system</th>
+<th>Build tools</th>
 </tr></thead>
 <tbody>
 <tr>
-<td>Needs data?</td>
-<td>Yes</td>
-<td>No</td>
+<td>Windows</td>
+<td>
+<a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> matching your R version</td>
 </tr>
 <tr>
-<td>Returns</td>
-<td>Evidence (no counterexample in searched region)</td>
-<td>Proof of equivalence when it succeeds</td>
+<td>macOS</td>
+<td>Run <code>xcode-select --install</code> in Terminal</td>
 </tr>
 <tr>
-<td>Handles arbitrary log-likelihoods?</td>
-<td>Yes</td>
-<td>Within the supported algebra</td>
-</tr>
-<tr>
-<td>Best for</td>
-<td>Any pair of specifications</td>
-<td>Suspected exact reparameterizations</td>
+<td>Debian / Ubuntu</td>
+<td>Install <code>r-base-dev</code>
+</td>
 </tr>
 </tbody>
 </table>
-<p>Run <code><a href="reference/compare_surfaces.html">compare_surfaces()</a></code> to see whether the data can tell two models apart; reach for the symbolic path when you suspect they are exactly the same model wearing different parameters.</p>
+<p>Check that R can find the compiler:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">pkgbuild</span><span class="fu">::</span><span class="fu"><a href="https://pkgbuild.r-lib.org/reference/has_build_tools.html" class="external-link">has_build_tools</a></span><span class="op">(</span>debug <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>Then install degen from GitHub:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"gcol33/degen"</span><span class="op">)</span></span></code></pre></div>
+<p>degen needs no system libraries beyond the compiler. Its C++ code links only to Rcpp, which is installed from CRAN with the package.</p>
 </div>
 <div class="section level2">
-<h2 id="custom-log-likelihoods">Custom log-likelihoods<a class="anchor" aria-label="anchor" href="#custom-log-likelihoods"></a>
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>Any function that maps data and named parameters to a scalar log-likelihood is a model:</p>
+<ol style="list-style-type: decimal">
+<li>Define each model with <code><a href="reference/model_spec.html">model_spec()</a></code> or a built-in such as <code><a href="reference/model_spec_exponential.html">model_spec_exponential()</a></code>.</li>
+<li>Test two models for equivalence with <code><a href="reference/equivalence_pair.html">equivalence_pair()</a></code> and <code><a href="reference/compare_surfaces.html">compare_surfaces()</a></code>.</li>
+<li>Check the parameters of one model with <code><a href="reference/identifiability_check.html">identifiability_check()</a></code>.</li>
+</ol>
+<p>A model specification holds a log-likelihood function whose first argument is the data <code>y</code> and whose other arguments are the parameters, named in <code>par_names</code>, with optional bounds. The data is a numeric vector, or whatever the log-likelihood function accepts.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># a model degen has never seen, defined in three lines</span></span>
-<span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec.html">model_spec</a></span><span class="op">(</span></span>
-<span>  loglik_fn  <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">mu</span>, <span class="va">sigma</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">mu</span>, <span class="va">sigma</span>, log <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  par_names  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu"</span>, <span class="st">"sigma"</span><span class="op">)</span>,</span>
-<span>  par_bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1e-6</span>, <span class="cn">Inf</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/gcol33/degen" class="external-link">degen</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">200</span>, rate <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">exp_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec_exponential.html">model_spec_exponential</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">gamma_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>par <span class="op">=</span> <span class="st">"rate"</span>, known_shape <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">pair</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/equivalence_pair.html">equivalence_pair</a></span><span class="op">(</span><span class="va">exp_model</span>, <span class="va">gamma_model</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/compare_surfaces.html">compare_surfaces</a></span><span class="op">(</span><span class="va">pair</span>, <span class="va">y</span>, tol <span class="op">=</span> <span class="fl">1e-4</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;surface_comparison&gt;</span></span>
+<span><span class="co">#&gt; Conclusion: Models appear EQUIVALENT</span></span>
+<span><span class="co">#&gt; Points tested: 200</span></span>
+<span><span class="co">#&gt; Max discrepancy: 6.79e-06</span></span>
+<span><span class="co">#&gt; Tolerance: 1.00e-04</span></span>
+<span><span class="co">#&gt; Method: grid</span></span></code></pre></div>
+<p>A gamma distribution with shape one is the exponential distribution, so the largest discrepancy over the 200 points tested stays below the tolerance. With the default tolerance of <code>1e-6</code> the discrepancy of the numerical search, about <code>7e-6</code>, would exceed it.</p>
+<p>The second model below has two means that enter the likelihood only through their sum:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sum_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec.html">model_spec</a></span><span class="op">(</span></span>
+<span>  loglik_fn <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span>, <span class="va">a</span>, <span class="va">b</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">y</span>, mean <span class="op">=</span> <span class="va">a</span> <span class="op">+</span> <span class="va">b</span>, sd <span class="op">=</span> <span class="fl">1</span>, log <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  par_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fisher_information.html">fisher_information</a></span><span class="op">(</span><span class="va">spec</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mu <span class="op">=</span> <span class="fl">1</span>, sigma <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/identifiability_check.html">identifiability_check</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span></code></pre></div>
-<p>This is the case <code>degen</code> is built for: mixture models with label switching, mechanistic models with competing functional forms, hierarchical models whose variance components trade off. Wherever model structure carries meaning, it tells you how much of that structure the data actually support.</p>
+<span><span class="va">y2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span>, mean <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/identifiability_check.html">identifiability_check</a></span><span class="op">(</span><span class="va">sum_model</span>, <span class="va">y2</span>, par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">2</span>, b <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;identifiability_result&gt;</span></span>
+<span><span class="co">#&gt; Overall: Model has NON-IDENTIFIABLE parameters</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Parameter status:</span></span>
+<span><span class="co">#&gt;   a: NON-IDENTIFIABLE</span></span>
+<span><span class="co">#&gt;   b: NON-IDENTIFIABLE</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Non-identified directions:</span></span>
+<span><span class="co">#&gt;   0.71*a -0.71*b</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Identified functions:</span></span>
+<span><span class="co">#&gt;   -0.71*a -0.71*b</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Condition number: 4.1e+12</span></span>
+<span><span class="co">#&gt; Rank: 1 / 2</span></span></code></pre></div>
+<p>Neither parameter is identified on its own; their sum is.</p>
 </div>
 <div class="section level2">
-<h2 id="robustness-and-bayesian-models">Robustness and Bayesian models<a class="anchor" aria-label="anchor" href="#robustness-and-bayesian-models"></a>
+<h2 id="comparing-several-models">Comparing several models<a class="anchor" aria-label="anchor" href="#comparing-several-models"></a>
 </h2>
-<p>An equivalence verdict should not hinge on a tolerance setting. <code><a href="reference/sensitivity_analysis.html">sensitivity_analysis()</a></code> sweeps tolerances and grid sizes, <code><a href="reference/bootstrap_equivalence.html">bootstrap_equivalence()</a></code> and <code><a href="reference/cross_validate_equivalence.html">cross_validate_equivalence()</a></code> resample the test, and <code><a href="reference/prior_sensitivity.html">prior_sensitivity()</a></code> checks how far a prior is doing the identifying. For fitted Bayesian models, <code><a href="reference/compare_posteriors.html">compare_posteriors()</a></code> and <code><a href="reference/extract_samples.html">extract_samples()</a></code> work on MCMC draws from <code>brms</code>, <code>rstan</code>, and <code>rstanarm</code>. Results export through <code><a href="reference/export_results.html">export_results()</a></code> (JSON, CSV, markdown) and <code><a href="reference/to_latex.html">to_latex()</a></code>.</p>
+<p><code><a href="reference/equivalence_classes.html">equivalence_classes()</a></code> compares every pair in a list of models and groups them into classes of equivalent models:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">gamma2_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/model_spec_gamma.html">model_spec_gamma</a></span><span class="op">(</span>par <span class="op">=</span> <span class="st">"rate"</span>, known_shape <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>exponential <span class="op">=</span> <span class="va">exp_model</span>, gamma1 <span class="op">=</span> <span class="va">gamma_model</span>,</span>
+<span>               gamma2 <span class="op">=</span> <span class="va">gamma2_model</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/equivalence_classes.html">equivalence_classes</a></span><span class="op">(</span><span class="va">models</span>, <span class="va">y</span>, tol <span class="op">=</span> <span class="fl">1e-4</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/compare_all_pairs.html">compare_all_pairs()</a></code> returns the full matrix of pairwise comparisons, and <code><a href="reference/find_equivalent_to.html">find_equivalent_to()</a></code> lists the models equivalent to one of them. <a href="https://gillescolling.com/degen/articles/case-studies.html" class="external-link">Case Studies</a> applies this to competing ecological models of population counts.</p>
+</div>
+<div class="section level2">
+<h2 id="models-from-fits-and-bayesian-draws">Models from fits and Bayesian draws<a class="anchor" aria-label="anchor" href="#models-from-fits-and-bayesian-draws"></a>
+</h2>
+<p><code><a href="reference/model_spec_from_fit.html">model_spec_from_fit()</a></code> takes the specification from a fitted <code>lm</code> or <code>glm</code>, so an existing model can be checked without writing its log-likelihood. For Bayesian models, <code><a href="reference/compare_posteriors.html">compare_posteriors()</a></code> compares two models on their posterior draws. Results export to JSON, CSV or Markdown with <code><a href="reference/export_results.html">export_results()</a></code> and to a LaTeX table with <code><a href="reference/to_latex.html">to_latex()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
+<p>Start with <a href="https://gillescolling.com/degen/articles/introduction.html" class="external-link">Introduction to degen</a>: observational equivalence and identifiability, with a first comparison, an identifiability check and equivalence classes.</p>
 <ul>
-<li><a href="https://gcol33.github.io/degen/articles/introduction.html">Introduction</a></li>
-<li><a href="https://gcol33.github.io/degen/articles/model-specification.html">Model Specification</a></li>
-<li><a href="https://gcol33.github.io/degen/articles/comparing-models.html">Comparing Models</a></li>
-<li><a href="https://gcol33.github.io/degen/articles/identifiability-diagnostics.html">Identifiability Diagnostics</a></li>
-<li><a href="https://gcol33.github.io/degen/articles/case-studies.html">Case Studies</a></li>
-<li><a href="https://gcol33.github.io/degen/reference/">Function Reference</a></li>
+<li>
+<a href="https://gillescolling.com/degen/articles/model-specification.html" class="external-link">Writing Model Specifications</a>: log-likelihood functions, parameter bounds, validation and common mistakes.</li>
+<li>
+<a href="https://gillescolling.com/degen/articles/comparing-models.html" class="external-link">Comparing Models</a>: grid and optimization search, tolerances, equivalence classes and plots of the likelihood surface.</li>
+<li>
+<a href="https://gillescolling.com/degen/articles/identifiability-diagnostics.html" class="external-link">Identifiability Diagnostics</a>: Fisher information, null directions and profile likelihoods.</li>
+<li>
+<a href="https://gillescolling.com/degen/articles/case-studies.html" class="external-link">Case Studies</a>: competing models applied to example data.</li>
+<li>
+<a href="https://gillescolling.com/degen/reference/" class="external-link">Full reference</a>: every function.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="getting-help">Getting help<a class="anchor" aria-label="anchor" href="#getting-help"></a>
+</h2>
+<p>Questions and bug reports go to the <a href="https://github.com/gcol33/degen/issues" class="external-link">GitHub issues</a>. A bug report is easiest to act on with a small reproducible example, for instance made with <a href="https://reprex.tidyverse.org/" class="external-link">reprex</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="support">Support<a class="anchor" aria-label="anchor" href="#support"></a>
@@ -212,17 +239,25 @@
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
-<p>MIT (see the LICENSE.md file)</p>
+<p>degen is licensed under MIT.</p>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co">@software{degen,</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">  author = {Colling, Gilles},</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">  title = {degen: Detect Observational Equivalence and Non-Identifiability in Parametric Models},</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">  year = {2025},</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">  url = {https://github.com/gcol33/degen}</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
+<p>To cite degen in publications use:</p>
+<pre class="text"><code>Colling G (2026). _degen: Detect Observational Equivalence and
+Non-Identifiability in Models_. R package version 0.15.0,
+&lt;https://github.com/gcol33/degen&gt;.</code></pre>
+<p>BibTeX:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="va">@Manual</span>{<span class="ot">colling2026degen</span>,</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="dt">title</span> = {degen: Detect Observational Equivalence and Non-Identifiability in</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>Models},</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="dt">author</span> = {Gilles Colling},</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="dt">year</span> = {2026},</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="dt">note</span> = {R package version 0.15.0},</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="dt">url</span> = {https://github.com/gcol33/degen},</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>}</span></code></pre></div>
+<p>Download the citation as <a href="https://gillescolling.com/degen/degen.bib" class="external-link">BibTeX</a> or <a href="https://gillescolling.com/degen/degen.ris" class="external-link">RIS</a>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -256,7 +291,14 @@
 </ul>
 </div>
 
-
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/gcol33/degen/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="https://app.codecov.io/gh/gcol33/degen" class="external-link"><img src="https://codecov.io/gh/gcol33/degen/graph/badge.svg" alt="Codecov test coverage"></a></li>
+<li><a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></li>
+</ul>
+</div>
 
   </aside>
 </div>

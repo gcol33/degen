@@ -8,13 +8,13 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/gcol33/degen/blob/main/DESCRIPTION)
+[`inst/CITATION`](https://github.com/gcol33/degen/blob/main/inst/CITATION)
 
 Colling G (2026). *degen: Detect Observational Equivalence and
 Non-Identifiability in Models*. R package version 0.15.0,
 <https://github.com/gcol33/degen>.
 
-    @Manual{,
+    @Manual{colling2026degen,
       title = {degen: Detect Observational Equivalence and Non-Identifiability in Models},
       author = {Gilles Colling},
       year = {2026},
