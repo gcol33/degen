@@ -34,10 +34,6 @@ navbar:
     - search
     - github
     - lightswitch
-  components:
-    intro:
-      text: Get started
-      href: articles/introduction.html
 reference:
 - title: Model Specification
   desc: Define models via their log-likelihood functions
@@ -163,9 +159,6 @@ reference:
   - nonidentifiable_example
 
 articles:
-- title: Get started
-  contents:
-  - introduction
 - title: Guides
   navbar: Guides
   contents:
@@ -173,3 +166,5 @@ articles:
   - comparing-models
   - identifiability-diagnostics
   - case-studies
+redirects:
+- ["articles/introduction.html", "articles/degen.html"]

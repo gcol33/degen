@@ -314,7 +314,7 @@ print(spec)
 
 ## See Also
 
-- `vignette("introduction")` - Package overview and quick start
+- `vignette("degen")` - Package overview and quick start
 
 - `vignette("comparing-models")` - Using models for equivalence testing
 

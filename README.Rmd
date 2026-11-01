@@ -115,7 +115,7 @@ equivalence_classes(models, y, tol = 1e-4)
 
 ## Documentation
 
-Start with [Introduction to degen](https://gcol33.github.io/degen/articles/introduction.html): observational equivalence and identifiability, with a first comparison, an identifiability check and equivalence classes.
+Start with [Introduction to degen](https://gcol33.github.io/degen/articles/degen.html): observational equivalence and identifiability, with a first comparison, an identifiability check and equivalence classes.
 
 - [Writing Model Specifications](https://gcol33.github.io/degen/articles/model-specification.html): log-likelihood functions, parameter bounds, validation and common mistakes.
 - [Comparing Models](https://gcol33.github.io/degen/articles/comparing-models.html): grid and optimization search, tolerances, equivalence classes and plots of the likelihood surface.

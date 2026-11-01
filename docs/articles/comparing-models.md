@@ -359,7 +359,7 @@ set.seed(789); r3 <- compare_surfaces(pair, y, n_points = 50)
 
 ## See Also
 
-- [`vignette("introduction")`](https://gcol33.github.io/degen/articles/introduction.md) -
+- [`vignette("degen")`](https://gcol33.github.io/degen/articles/degen.md) -
   Package overview and quick start
 
 - [`vignette("identifiability-diagnostics")`](https://gcol33.github.io/degen/articles/identifiability-diagnostics.md) -

@@ -197,7 +197,7 @@ JSON file with `export_results()`. A LaTeX table comes from
 ## Documentation
 
 Start with [Introduction to
-degen](https://gcol33.github.io/degen/articles/introduction.html):
+degen](https://gcol33.github.io/degen/articles/degen.html):
 observational equivalence and identifiability, with a first comparison,
 an identifiability check and equivalence classes.
 

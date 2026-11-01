@@ -388,7 +388,7 @@ check_gradient(model, y_growth, par = true_par)
 
 ## See Also
 
-- [`vignette("introduction")`](https://gcol33.github.io/degen/articles/introduction.md) -
+- [`vignette("degen")`](https://gcol33.github.io/degen/articles/degen.md) -
   Package overview and quick start
 
 - [`vignette("comparing-models")`](https://gcol33.github.io/degen/articles/comparing-models.md) -

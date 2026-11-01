@@ -279,7 +279,7 @@ set.seed(789); r3 <- compare_surfaces(pair, y, n_points = 50)
 
 ## See Also
 
-- `vignette("introduction")` - Package overview and quick start
+- `vignette("degen")` - Package overview and quick start
 
 - `vignette("identifiability-diagnostics")` - When parameters can't be distinguished
 

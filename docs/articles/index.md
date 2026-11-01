@@ -1,10 +1,5 @@
 # Articles
 
-### Get started
-
-- [Introduction to
-  degen](https://gcol33.github.io/degen/articles/introduction.md):
-
 ### Guides
 
 - [Writing Model
