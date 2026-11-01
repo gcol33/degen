@@ -29,23 +29,15 @@ navbar:
     - intro
     - reference
     - articles
+    - news
     right:
     - search
     - github
+    - lightswitch
   components:
-    articles:
-      text: Articles
-      menu:
-      - text: Getting Started
-        href: articles/introduction.html
-      - text: Writing Model Specifications
-        href: articles/model-specification.html
-      - text: Comparing Models
-        href: articles/comparing-models.html
-      - text: Identifiability Diagnostics
-        href: articles/identifiability-diagnostics.html
-      - text: Case Studies
-        href: articles/case-studies.html
+    intro:
+      text: Get started
+      href: articles/introduction.html
 reference:
 - title: Model Specification
   desc: Define models via their log-likelihood functions
@@ -169,3 +161,15 @@ reference:
   - equivalent_models
   - mixture_model
   - nonidentifiable_example
+
+articles:
+- title: Get started
+  contents:
+  - introduction
+- title: Guides
+  navbar: Guides
+  contents:
+  - model-specification
+  - comparing-models
+  - identifiability-diagnostics
+  - case-studies
