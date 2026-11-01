@@ -253,7 +253,7 @@ validate_loglik(spec, y, n_test = 10)
 
 ### Full diagnostics
 
-For comprehensive checking, use
+For the full set of checks, use
 [`diagnose_model()`](https://gcol33.github.io/degen/reference/diagnose_model.md):
 
 ``` r

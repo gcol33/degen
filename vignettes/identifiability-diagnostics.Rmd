@@ -73,7 +73,7 @@ bivariate_spec <- model_spec(
 
 ## Basic identifiability check
 
-Use `identifiability_check()` for a comprehensive assessment:
+`identifiability_check()` combines Fisher information analysis with profile likelihood diagnostics:
 
 ```{r basic-check}
 set.seed(42)

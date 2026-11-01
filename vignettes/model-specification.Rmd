@@ -226,7 +226,7 @@ validate_loglik(spec, y, n_test = 10)
 
 ### Full diagnostics
 
-For comprehensive checking, use `diagnose_model()`:
+For the full set of checks, use `diagnose_model()`:
 
 ```{r diagnose, eval = FALSE}
 # diagnose_model() runs multiple checks

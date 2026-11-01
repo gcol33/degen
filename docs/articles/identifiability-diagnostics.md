@@ -61,9 +61,9 @@ bivariate_spec <- model_spec(
 
 ## Basic identifiability check
 
-Use
 [`identifiability_check()`](https://gcol33.github.io/degen/reference/identifiability_check.md)
-for a comprehensive assessment:
+combines Fisher information analysis with profile likelihood
+diagnostics:
 
 ``` r
 
